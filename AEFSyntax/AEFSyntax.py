@@ -1,3 +1,8 @@
+# AEFSyntax.py
+#
+# Checks the syntax of AEF files
+#
+
 # Load os library
 import os
 
@@ -17,9 +22,9 @@ def main():
 	files	= os.listdir(aef_dir)
 	for file in files:
 		if check_file(file):
-			print("'" + file + "' is a valid AEF file.")
+			print("\n'" + file + "' is a syntactically correct AEF file.")
 		else:
-			print("'" + file + "' contains errors")
+			print("\n'" + file + "' contains errors")
 
 
 def check_file(file):

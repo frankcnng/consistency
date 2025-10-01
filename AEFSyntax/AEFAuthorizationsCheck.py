@@ -1,6 +1,7 @@
 # AEFAuthorizationsCheck.py
-
-import re
+#
+# Checks the content of the Authorizations worksheet
+#
 
 from AEFRowFieldsSyntaxCheck import AEFRowFieldsSyntaxCheck
 
@@ -34,61 +35,3 @@ class AEFAuthorizationsCheck(AEFRowFieldsSyntaxCheck):
 										]
 
 		super().__init__(worksheet, field_names)
-
-
-	def check_content(self):
-
-		print ("\nChecking the content of '" + self.template_sheet_name + "'")
-
-		fields_start_column	= 0
-		fields_end_column	= 0
-		fields_row			= 0
-		template_fields		= self.field_names
-		n_template_fields	= len(template_fields)
-		worksheet			= self.worksheet
-		for column in worksheet.iter_rows(min_row=worksheet.min_row, max_row=worksheet.max_row, min_col=worksheet.min_column, max_col=worksheet.max_column):
-			for cell in column:
-				if ((cell.data_type == "s") and (cell.value.casefold() == template_fields[1].casefold())):
-					fields_start_column	= cell.column
-					fields_row			= cell.row
-					continue
-				elif ((fields_start_column > 0) and (cell.data_type == "s") and (cell.value.casefold() == template_fields[n_template_fields - 1].casefold())):
-					fields_end_column	= cell.column
-					break
-
-		row			= fields_row + 1	# content is in the row after the field names
-		x_tuple		= 0
-		is_valid	= True
-
-		for x_column in range(fields_start_column, fields_end_column):
-			if (self.check_cell_content(row, x_column, x_tuple)) is False:
-				is_valid	= False
-			x_tuple	+= 1
-		return is_valid
-
-
-	def check_cell_content(self, x_target_row, x_target_column, x_tuple):
-		field_reg_exp_tuple	= self.field_reg_exp_tuples[x_tuple]
-		field_name			= field_reg_exp_tuple[0]
-		field_reg_exp		= field_reg_exp_tuple[1]
-
-		if (field_reg_exp == ""):
-			return True
-
-		field_error_mesg	= field_reg_exp_tuple[2]
-		cell				= self.worksheet.cell(x_target_row, x_target_column)
-		if (re.match("^blankable", field_reg_exp) != None):	# if the cell can be either blank, of a defined set of values
-			if (cell.value == None):	# if the cell is empty
-				return True
-
-		if (cell.data_type == 'd'):
-			if (re.match(field_reg_exp, str(cell.number_format)) == None):
-				print ("	Cell content error: The value provided for '" + field_name + " must be in the format dd/mm/yyyy")
-				return False
-		elif (re.fullmatch(field_reg_exp, str(cell.value))) == None:
-
-			print ("	Cell content error: The value provided for '" + field_name + field_error_mesg)
-			return False
-		return True
-
-

@@ -1,4 +1,7 @@
 # AEFSubmissionCheck.py
+#
+# Check the Submission worksheet
+#
 
 import re
 

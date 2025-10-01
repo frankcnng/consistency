@@ -71,7 +71,7 @@ class AEFSummaryCheck(AEFColumnFieldsSyntaxCheck):
 											"Purpose for which the ITMO has been used towards or cancelled for OIMP",
 											"Using/cancelling participating Party ID",
 											"Using/cancelling authorized entity ID",
-											"Calendar year for which the ITMOs are used towards the Party\'s NDC",
+											"Calendar year for which the ITMOs are used towards the Party's NDC",
 											"Result of the consistency checks",
 											"Additional explanatory information"
 										]
