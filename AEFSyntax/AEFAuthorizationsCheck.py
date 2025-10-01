@@ -42,7 +42,7 @@ class AEFAuthorizationsCheck(AEFRowFieldsSyntaxCheck):
 
 		fields_start_column	= 0
 		fields_end_column	= 0
-		fields_row		= 0
+		fields_row			= 0
 		template_fields		= self.field_names
 		n_template_fields	= len(template_fields)
 		worksheet			= self.worksheet
