@@ -35,10 +35,6 @@ class AEFRowFieldsSyntaxCheck(AEFSheetSyntaxCheck):
 					if (cell.row == field_headings_row):
 						if ((cell.value == None)):
 							n_blank_cells	= n_blank_cells + 1
-							# print ("row is " + str(cell.row))
-							# print ("col is " + str(cell.column))
-							# print ("blanks is " + str(n_blank_cells))
-							# print ()
 							continue
 						elif ((fields_start_column > 0) and (cell.data_type == "s") and (cell.value.casefold() == template_fields[n_template_fields - 1].casefold())):
 							fields_end_column	= cell.column
@@ -47,21 +43,16 @@ class AEFRowFieldsSyntaxCheck(AEFSheetSyntaxCheck):
 						break
 
 		if (heading_column == 0):
-			print ("Could not find '" + template_fields[0] + "' heading in the '" + template_fields[0] + "' worksheet.")
+			print ("\tCould not find '" + template_fields[0] + "' heading in the '" + template_fields[0] + "' worksheet.")
 			return False
 		elif (fields_start_column == 0):
-			print ("Could not find '" + template_fields[1] + "' heading in the '" + template_fields[0] + "' worksheet.")
+			print ("\tCould not find '" + template_fields[1] + "' heading in the '" + template_fields[0] + "' worksheet.")
 			return False
 		elif (fields_end_column == 0):
-			print ("Could not find '" + template_fields[n_template_fields - 1] + "' heading in the '" + template_fields[0] +"' worksheet.")
+			print ("\tCould not find '" + template_fields[n_template_fields - 1] + "' heading in the '" + template_fields[0] +"' worksheet.")
 			return False
 		elif ((fields_end_column - fields_start_column - n_blank_cells + 1) != (n_template_fields - 1)):	# (n_template_fields - 1) as the first element of array is sheet name
-			# print ("template fields: " + str(n_template_fields - 1))
-			# print ("start col: " + str(fields_start_column))
-			# print ("end col: " + str(fields_end_column))
-			# print ("blanks: " + str(n_blank_cells))
-			# print ("fields in sheet: " + str(fields_end_column - fields_start_column - n_blank_cells + 1))
-			print ("Number of fields in '" + template_fields[0] + "' worksheet is incorrect.")
+			print ("\tNumber of fields in '" + template_fields[0] + "' worksheet is incorrect.")
 			return False
 
 		dest_fields	= []
@@ -76,7 +67,6 @@ class AEFRowFieldsSyntaxCheck(AEFSheetSyntaxCheck):
 
 
 	def check_content(self):
-
 		print ("\nChecking the content of '" + self.template_sheet_name + "'")
 
 		fields_start_column	= 0
@@ -106,26 +96,28 @@ class AEFRowFieldsSyntaxCheck(AEFSheetSyntaxCheck):
 		return is_valid
 
 
-	def check_cell_content(self, x_target_row, x_target_column, x_tuple):
-		field_reg_exp_tuple	= self.field_reg_exp_tuples[x_tuple]
-		field_name			= field_reg_exp_tuple[0]
-		field_reg_exp		= field_reg_exp_tuple[1]
+	# def check_cell_content(self, x_target_row, x_target_column, x_tuple):
+	# 	field_reg_exp_tuple	= self.field_reg_exp_tuples[x_tuple]
+	# 	field_name			= field_reg_exp_tuple[0]
+	# 	field_reg_exp		= field_reg_exp_tuple[1]
 
-		if (field_reg_exp == ""):
-			return True
+	# 	if (field_reg_exp == ""):
+	# 		return True
 
-		field_error_mesg	= field_reg_exp_tuple[2]
-		cell				= self.worksheet.cell(x_target_row, x_target_column)
-		if (re.match("^blankable", field_reg_exp) != None):	# if the cell can be either blank, of a defined set of values
-			if (cell.value == None):	# if the cell is empty
-				return True
+	# 	field_error_mesg	= field_reg_exp_tuple[2]
+	# 	cell				= self.worksheet.cell(x_target_row, x_target_column)
+	# 	if (re.match("^blankable", field_reg_exp) != None):	# if the cell can be either blank, of a defined set of values
+	# 		if (cell.value == None):	# if the cell is empty
+	# 			return True
 
-		if (cell.data_type == 'd'):
-			if (re.match(field_reg_exp, str(cell.number_format)) == None):
-				print ("	Cell content error: The value provided for '" + field_name + " must be in the format dd/mm/yyyy")
-				return False
-		elif (re.fullmatch(field_reg_exp, str(cell.value))) == None:
+	# 	if (cell.data_type == 'd'):
+	# 		if (re.match(field_reg_exp, str(cell.number_format)) == None):
+	# 			print ("\tCell content error: The value provided for '" + field_name + " must be in the format dd/mm/yyyy")
+	# 			return False
+	# 	elif (re.fullmatch(field_reg_exp, str(cell.value))) == None:
 
-			print ("	Cell content error: The value provided for '" + field_name + field_error_mesg)
-			return False
-		return True
+	# 		print ("\tCell content error: The value provided for '" + field_name + field_error_mesg)
+	# 		return False
+	# 	return True
+
+

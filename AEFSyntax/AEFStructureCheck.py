@@ -1,4 +1,4 @@
-# AEFStructure.py
+# AEFStructureCheck.py
 
 from AEFSummaryCheck import AEFSummaryCheck
 from AEFSubmissionCheck import AEFSubmissionCheck
@@ -8,7 +8,7 @@ from AEFHoldingsCheck import AEFHoldingsCheck
 from AEFAuthEntitiesCheck import AEFAuthEntitiesCheck
 
 
-class AEFStructure:
+class AEFStructureCheck:
 
 	def __init__(self):
 		self.sheet_count =	7

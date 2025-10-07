@@ -1,4 +1,4 @@
-# AEFSyntax.py
+# AEFSyntaxCheck.py
 #
 # Checks the syntax of AEF files
 #
@@ -9,8 +9,8 @@ import os
 # Load the openpyxl Excel library
 from openpyxl import load_workbook
 
-from AEFStructure import AEFStructure
-from AEFContent import AEFContent
+from AEFStructureCheck import AEFStructureCheck
+from AEFContentCheck import AEFContentCheck
 
 
 # The directory containing AEF files to be checked
@@ -33,11 +33,11 @@ def check_file(file):
 	worksheets	= []
 	field_names	= []
 
-	structure = AEFStructure()
-	if structure.check(workbook, worksheets, field_names) is False:
+	structureCheck = AEFStructureCheck()
+	if structureCheck.check(workbook, worksheets, field_names) is False:
 		return False
-	content = AEFContent()
-	if content.check(worksheets, field_names) is False:
+	contentCheck = AEFContentCheck()
+	if contentCheck.check(worksheets, field_names) is False:
 		return False
 	return True
 

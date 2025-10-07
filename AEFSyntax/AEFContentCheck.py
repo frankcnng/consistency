@@ -1,4 +1,4 @@
-# AEFContent.py
+# AEFContentCheck.py
 
 from AEFSubmissionCheck import AEFSubmissionCheck
 from AEFAuthorizationsCheck import AEFAuthorizationsCheck
@@ -7,7 +7,7 @@ from AEFHoldingsCheck import AEFHoldingsCheck
 from AEFAuthEntitiesCheck import AEFAuthEntitiesCheck
 
 
-class AEFContent:
+class AEFContentCheck:
 
 	def __init__(self):
 		self.sheet_count =	7
