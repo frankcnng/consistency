@@ -107,7 +107,7 @@ class AEFSummaryCheck(AEFColumnFieldsSyntaxCheck):
 										]
 
 
-	def check_structure(self, workbook, field_names):
+	def check_structure(self, workbook, field_names, str_results):
 		self.set_field_names(field_names)
 		dest_names	= workbook.sheetnames
 		worksheet	= None
@@ -117,10 +117,10 @@ class AEFSummaryCheck(AEFColumnFieldsSyntaxCheck):
 				self.worksheet	= worksheet
 				break
 		if (worksheet == None):
-			print("Could not find worksheet '" + self.template_sheet_name + "'.")
+			str_results[0]	+= "\n\tCould not find worksheet '" + self.template_sheet_name + "'."
 		for x_table in range (0, 4):
 			self.field_names	= field_names[x_table]
-			if (self.check_field_names()) is False:
+			if (self.check_field_names(str_results)) is False:
 				return False
 		return True
 

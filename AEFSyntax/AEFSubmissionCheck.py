@@ -27,9 +27,9 @@ class AEFSubmissionCheck(AEFColumnFieldsSyntaxCheck):
 		super().__init__(worksheet, field_names)
 
 
-	def check_content(self):
+	def check_content(self, str_results):
 
-		print ("\nChecking the content of '" + self.template_sheet_name + "'")
+		str_results[0]	+= "\n\tChecking the content of '" + self.template_sheet_name + "'"
 
 		fields_start_row	= 0
 		fields_end_row		= 0
@@ -51,13 +51,13 @@ class AEFSubmissionCheck(AEFColumnFieldsSyntaxCheck):
 		x_tuple		= 0
 		is_valid	= True
 		for x_row in range(fields_start_row, fields_end_row):
-			if (self.check_cell_content(x_row, column, x_tuple)) is False:
+			if (self.check_cell_content(x_row, column, x_tuple, str_results)) is False:
 				is_valid	= False
 			x_tuple	+= 1
 		return is_valid
 
 
-	def check_cell_content(self, x_target_row, x_target_column, x_tuple):
+	def check_cell_content(self, x_target_row, x_target_column, x_tuple, str_results):
 		field_reg_exp_tuple	= self.field_reg_exp_tuples[x_tuple]
 		field_name			= field_reg_exp_tuple[0]
 		field_reg_exp		= field_reg_exp_tuple[1]
@@ -65,10 +65,10 @@ class AEFSubmissionCheck(AEFColumnFieldsSyntaxCheck):
 		cell	= self.worksheet.cell(x_target_row, x_target_column)
 		if (cell.data_type == 'd'):
 			if (re.match(field_reg_exp, str(cell.number_format)) == None):
-				print ("	Cell content error: The value provided for '" + field_name + " must be in the format dd/mm/yyyy")
+				str_results[0]	+= "\n\t\tCell content error: The value provided for '" + field_name + " must be in the format dd/mm/yyyy"
 				return False
 		elif (re.fullmatch(field_reg_exp, str(cell.value))) == None:
-			print ("	Cell content error: The value provided for '" + field_name + field_error_mesg)
+			str_results[0]	+= "\n\t\tCell content error: The value provided for '" + field_name + field_error_mesg
 			return False
 		return True
 

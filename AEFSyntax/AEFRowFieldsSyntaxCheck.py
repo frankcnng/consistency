@@ -10,7 +10,9 @@ from AEFSheetSyntaxCheck import AEFSheetSyntaxCheck
 
 class AEFRowFieldsSyntaxCheck(AEFSheetSyntaxCheck):
 
-	def check_field_names(self):
+	def check_field_names(self, str_results):
+	# Check the names of the field names (headings) in the sheet correspond with those in the field_names array
+	#
 		heading_column		= 0
 		fields_start_column	= 0
 		fields_end_column	= 0
@@ -43,16 +45,16 @@ class AEFRowFieldsSyntaxCheck(AEFSheetSyntaxCheck):
 						break
 
 		if (heading_column == 0):
-			print ("\tCould not find '" + template_fields[0] + "' heading in the '" + template_fields[0] + "' worksheet.")
+			str_results[0]	+= "\n\t\tCould not find '" + template_fields[0] + "' heading in the '" + template_fields[0] + "' worksheet."
 			return False
 		elif (fields_start_column == 0):
-			print ("\tCould not find '" + template_fields[1] + "' heading in the '" + template_fields[0] + "' worksheet.")
+			str_results[0]	+= "\n\t\tCould not find '" + template_fields[1] + "' heading in the '" + template_fields[0] + "' worksheet."
 			return False
 		elif (fields_end_column == 0):
-			print ("\tCould not find '" + template_fields[n_template_fields - 1] + "' heading in the '" + template_fields[0] +"' worksheet.")
+			str_results[0]	+= "\n\t\tCould not find '" + template_fields[n_template_fields - 1] + "' heading in the '" + template_fields[0] +"' worksheet."
 			return False
 		elif ((fields_end_column - fields_start_column - n_blank_cells + 1) != (n_template_fields - 1)):	# (n_template_fields - 1) as the first element of array is sheet name
-			print ("\tNumber of fields in '" + template_fields[0] + "' worksheet is incorrect.")
+			str_results[0]	+= "\n\t\tNumber of fields in '" + template_fields[0] + "' worksheet is incorrect."
 			return False
 
 		dest_fields	= []
@@ -61,13 +63,15 @@ class AEFRowFieldsSyntaxCheck(AEFSheetSyntaxCheck):
 
 		for x_field in range (1, n_template_fields):
 			if (template_fields[x_field] in dest_fields[0]) is False:
-				print ("The field '" + template_fields[x_field] + "' cannot be found in '" + template_fields[0] + " worksheet.")
+				str_results[0]	+= "\n\t\tThe field '" + template_fields[x_field] + "' cannot be found in '" + template_fields[0] + " worksheet."
 				return False
 		return True
 
 
-	def check_content(self):
-		print ("\nChecking the content of '" + self.template_sheet_name + "'")
+	def check_content(self, str_results):
+	# Check the contents of the fields in the sheet are syntactically correct
+	#
+		str_results[0]	+= "\n\tChecking the content of '" + self.template_sheet_name + "'"
 
 		fields_start_column	= 0
 		fields_end_column	= 0
@@ -90,34 +94,7 @@ class AEFRowFieldsSyntaxCheck(AEFSheetSyntaxCheck):
 		is_valid	= True
 
 		for x_column in range(fields_start_column, fields_end_column):
-			if (self.check_cell_content(row, x_column, x_tuple)) is False:
+			if (self.check_cell_content(row, x_column, x_tuple, str_results)) is False:
 				is_valid	= False
 			x_tuple	+= 1
 		return is_valid
-
-
-	# def check_cell_content(self, x_target_row, x_target_column, x_tuple):
-	# 	field_reg_exp_tuple	= self.field_reg_exp_tuples[x_tuple]
-	# 	field_name			= field_reg_exp_tuple[0]
-	# 	field_reg_exp		= field_reg_exp_tuple[1]
-
-	# 	if (field_reg_exp == ""):
-	# 		return True
-
-	# 	field_error_mesg	= field_reg_exp_tuple[2]
-	# 	cell				= self.worksheet.cell(x_target_row, x_target_column)
-	# 	if (re.match("^blankable", field_reg_exp) != None):	# if the cell can be either blank, of a defined set of values
-	# 		if (cell.value == None):	# if the cell is empty
-	# 			return True
-
-	# 	if (cell.data_type == 'd'):
-	# 		if (re.match(field_reg_exp, str(cell.number_format)) == None):
-	# 			print ("\tCell content error: The value provided for '" + field_name + " must be in the format dd/mm/yyyy")
-	# 			return False
-	# 	elif (re.fullmatch(field_reg_exp, str(cell.value))) == None:
-
-	# 		print ("\tCell content error: The value provided for '" + field_name + field_error_mesg)
-	# 		return False
-	# 	return True
-
-

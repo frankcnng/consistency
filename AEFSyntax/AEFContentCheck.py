@@ -22,23 +22,23 @@ class AEFContentCheck:
 							]
 
 
-	def check(self, worksheets, field_names):
+	def check(self, worksheets, field_names, str_results):
 
 		is_valid	= True
 		submission_check	= AEFSubmissionCheck(worksheets[2], field_names[0])
-		if (submission_check.check_content()) is False:
+		if (submission_check.check_content(str_results)) is False:
 			is_valid	= False
 		authorizations_check	= AEFAuthorizationsCheck(worksheets[3], field_names[1])
-		if (authorizations_check.check_content()) is False:
+		if (authorizations_check.check_content(str_results)) is False:
 			is_valid	= False
 		actions_check	= AEFActionsCheck(worksheets[4], field_names[2])
-		if (actions_check.check_content()) is False:
+		if (actions_check.check_content(str_results)) is False:
 			is_valid	= False
 		holdings_check	= AEFHoldingsCheck(worksheets[5], field_names[3])
-		if (holdings_check.check_content()) is False:
+		if (holdings_check.check_content(str_results)) is False:
 			is_valid	= False
 		auth_entities_check	= AEFAuthEntitiesCheck(worksheets[6], field_names[4])
-		if (auth_entities_check.check_content()) is False:
+		if (auth_entities_check.check_content(str_results)) is False:
 			is_valid	= False
 
 		return is_valid
