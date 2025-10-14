@@ -1,4 +1,4 @@
-# AEFHoldings.py
+# AEFRowFieldsSyntaxCheck.py
 #
 # Check for worksheet whose fields are arranged in rows
 #
@@ -7,10 +7,12 @@ import re
 
 from AEFSheetSyntaxCheck import AEFSheetSyntaxCheck
 
+import syntaxreport
+
 
 class AEFRowFieldsSyntaxCheck(AEFSheetSyntaxCheck):
 
-	def check_field_names(self, str_results):
+	def check_field_names(self, sheet_report):
 	# Check the names of the field names (headings) in the sheet correspond with those in the field_names array
 	#
 		heading_column		= 0
@@ -44,17 +46,26 @@ class AEFRowFieldsSyntaxCheck(AEFSheetSyntaxCheck):
 					else:
 						break
 
+		str_link	= "#" + self.template_sheet_name + "!A1"
 		if (heading_column == 0):
-			str_results[0]	+= "\n\t\tCould not find '" + template_fields[0] + "' heading in the '" + template_fields[0] + "' worksheet."
+			cell_report	= syntaxreport.AEFCheckCellReport(str_link, "Could not find '" + template_fields[0] + "' heading in the '" + template_fields[0] + "' worksheet.")
+			sheet_report.add_cell_report(cell_report)
+#			str_results[0]	+= "\n\t\tCould not find '" + template_fields[0] + "' heading in the '" + template_fields[0] + "' worksheet."
 			return False
 		elif (fields_start_column == 0):
-			str_results[0]	+= "\n\t\tCould not find '" + template_fields[1] + "' heading in the '" + template_fields[0] + "' worksheet."
+			cell_report	= syntaxreport.AEFCheckCellReport(str_link, "Could not find '" + template_fields[1] + "' heading in the '" + template_fields[0] + "' worksheet.")
+			sheet_report.add_cell_report(cell_report)
+#			str_results[0]	+= "\n\t\tCould not find '" + template_fields[1] + "' heading in the '" + template_fields[0] + "' worksheet."
 			return False
 		elif (fields_end_column == 0):
-			str_results[0]	+= "\n\t\tCould not find '" + template_fields[n_template_fields - 1] + "' heading in the '" + template_fields[0] +"' worksheet."
+			cell_report	= syntaxreport.AEFCheckCellReport(str_link, "Could not find '" + template_fields[n_template_fields - 1] + "' heading in the '" + template_fields[0] + "' worksheet.")
+			sheet_report.add_cell_report(cell_report)
+#			str_results[0]	+= "\n\t\tCould not find '" + template_fields[n_template_fields - 1] + "' heading in the '" + template_fields[0] +"' worksheet."
 			return False
 		elif ((fields_end_column - fields_start_column - n_blank_cells + 1) != (n_template_fields - 1)):	# (n_template_fields - 1) as the first element of array is sheet name
-			str_results[0]	+= "\n\t\tNumber of fields in '" + template_fields[0] + "' worksheet is incorrect."
+			cell_report	= syntaxreport.AEFCheckCellReport(str_link, "Could not find '" + template_fields[0] + "' heading in the '" + template_fields[0] + "' worksheet.")
+			sheet_report.add_cell_report(cell_report)
+#			str_results[0]	+= "\n\t\tNumber of fields in '" + template_fields[0] + "' worksheet is incorrect."
 			return False
 
 		dest_fields	= []
@@ -63,15 +74,19 @@ class AEFRowFieldsSyntaxCheck(AEFSheetSyntaxCheck):
 
 		for x_field in range (1, n_template_fields):
 			if (template_fields[x_field] in dest_fields[0]) is False:
-				str_results[0]	+= "\n\t\tThe field '" + template_fields[x_field] + "' cannot be found in '" + template_fields[0] + " worksheet."
+				cell_report	= syntaxreport.AEFCheckCellReport(str_link, "The field '" + template_fields[x_field] + "' cannot be found in '" + template_fields[0] + " worksheet.")
+				sheet_report.add_cell_report(cell_report)
+#				str_results[0]	+= "\n\t\tThe field '" + template_fields[x_field] + "' cannot be found in '" + template_fields[0] + " worksheet."
 				return False
 		return True
 
 
-	def check_content(self, str_results):
+	def check_content(self, sheet_report):
 	# Check the contents of the fields in the sheet are syntactically correct
 	#
-		str_results[0]	+= "\n\tChecking the content of '" + self.template_sheet_name + "'"
+		cell_report	= syntaxreport.AEFCheckCellReport(None, "Checking the content of '" + self.template_sheet_name + "'")
+		sheet_report.add_cell_report(cell_report)
+#		str_results[0]	+= "\n\tChecking the content of '" + self.template_sheet_name + "'"
 
 		fields_start_column	= 0
 		fields_end_column	= 0
@@ -94,7 +109,7 @@ class AEFRowFieldsSyntaxCheck(AEFSheetSyntaxCheck):
 		is_valid	= True
 
 		for x_column in range(fields_start_column, fields_end_column):
-			if (self.check_cell_content(row, x_column, x_tuple, str_results)) is False:
+			if (self.check_cell_content(row, x_column, x_tuple, sheet_report)) is False:
 				is_valid	= False
 			x_tuple	+= 1
 		return is_valid

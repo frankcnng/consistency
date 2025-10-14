@@ -4,7 +4,8 @@
 # - ensures the field names in the Summary sheet match those in the Constructor
 #
 
-from AEFColumnFieldsSyntaxCheck import AEFColumnFieldsSyntaxCheck
+import AEFColumnFieldsSyntaxCheck
+import syntaxreport
 
 
 class AEFSummaryCheck(AEFColumnFieldsSyntaxCheck):
@@ -107,7 +108,11 @@ class AEFSummaryCheck(AEFColumnFieldsSyntaxCheck):
 										]
 
 
-	def check_structure(self, workbook, field_names, str_results):
+	def check_structure(self, workbook, field_names, check_report):
+		sheet_report	= syntaxreport.AEFCheckSheetReport(self.template_sheet_name)
+		check_report.add_sheet_report(sheet_report)
+#		str_results[0]	+= "\n\tChecking the structure of '" + self.template_sheet_name + "'"
+
 		self.set_field_names(field_names)
 		dest_names	= workbook.sheetnames
 		worksheet	= None
@@ -117,10 +122,13 @@ class AEFSummaryCheck(AEFColumnFieldsSyntaxCheck):
 				self.worksheet	= worksheet
 				break
 		if (worksheet == None):
-			str_results[0]	+= "\n\tCould not find worksheet '" + self.template_sheet_name + "'."
+			cell_report	= syntaxreport.AEFCheckCellReport(None, "Could not find worksheet '" + self.template_sheet_name + "'.")
+			sheet_report.add_cell_report(cell_report)
+#			str_results[0]	+= "\n\tCould not find worksheet '" + self.template_sheet_name + "'."
+
 		for x_table in range (0, 4):
 			self.field_names	= field_names[x_table]
-			if (self.check_field_names(str_results)) is False:
+			if (self.check_field_names(check_report)) is False:
 				return False
 		return True
 
