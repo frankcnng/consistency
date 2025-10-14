@@ -10,7 +10,7 @@ class AEFCellReport:
 
 	def print(self, workbook, results_sheet, x_row):
 		if (self.cell_ref != None):
-			cell			= results_sheet.cell(x_row, 3)
+			cell			= results_sheet.cell(x_row, 4)
 			cell.hyperlink	= self.cell_ref
 			cell.value		= "Link"
-		results_sheet.cell(x_row, 4, value=self.str_mesg)
+		results_sheet.cell(x_row, 5, value=self.str_mesg)

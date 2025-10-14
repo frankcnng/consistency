@@ -7,13 +7,14 @@
 # from AEFAuthEntitiesCheck import AEFAuthEntitiesCheck
 
 import aefsheets
+from syntaxreport.AEFSheetReport import AEFSheetReport
 
 
 class AEFContentCheck:
 
 	def check(self, worksheets, field_names, check_report):
-
-		is_valid	= True
+		check_report.add_sheet_report(AEFSheetReport("Content check", 2))
+		is_valid			= True
 		submission_check	= aefsheets.AEFSubmission(worksheets[2], field_names[0])
 		if (submission_check.check_content(check_report)) is False:
 			is_valid	= False

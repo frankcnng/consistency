@@ -16,18 +16,32 @@ class AEFSheet:
 
 
 	def check_structure(self, check_report):
-		sheet_report	= AEFSheetReport(self.template_sheet_name)
-		check_report.add_sheet_report(sheet_report)
-#		str_results[0]	+= "\n\tChecking the structure of '" + self.template_sheet_name + "'"
-		return self.check_field_names(sheet_report)
+		return self.check_field_names(check_report)
 
 
-	def check_field_names(self, sheet_report):
+	def check_fields_dimensions(self, x_heading, x_start, x_end, n_blanks, worksheet, template_fields, sheet_report):
+		n_template_fields	= len(template_fields)
+		if (x_heading == 0):
+			sheet_report.add_cell_report(self.template_sheet_name, worksheet.cell(1,1), "Could not find '" + template_fields[0] + "' section in worksheet.")
+			return False
+		elif (x_start == 0):
+			sheet_report.add_cell_report(self.template_sheet_name, worksheet.cell(1,1), "Could not find '" + template_fields[1] + "' field in worksheet.")
+			return False
+		elif (x_end == 0):
+			sheet_report.add_cell_report(self.template_sheet_name, worksheet.cell(1,1), "Could not find '" + template_fields[n_template_fields - 1] + "' field in worksheet.")
+			return False
+		elif ((x_end - x_start - n_blanks + 1) != n_template_fields - 1):
+			sheet_report.add_cell_report(self.template_sheet_name, worksheet.cell(1,1), "Number of fields in '" + template_fields[0] + "' worksheet is incorrect.")
+			return False
 		return True
 
 
-	def check_content(self, sheet_report):
-		return True
+	# def check_field_names(self, sheet_report):
+	# 	return True
+
+
+	# def check_content(self, sheet_report):
+	# 	return True
 	
 
 	def check_cell_content(self, x_target_row, x_target_column, x_tuple, sheet_report):
@@ -47,17 +61,11 @@ class AEFSheet:
 		if (cell.data_type == 'd'):
 			if (re.match(field_reg_exp, str(cell.number_format)) == None):
 				str_message	= "Cell content error: The value provided for '" + field_name + " must be in the format dd/mm/yyyy"
-				self.add_comment(cell, str_message)
-				str_link	= "#'" + self.template_sheet_name + "'" + "!" + self.coord2cell_ref(x_target_row, x_target_column)
-				cell_report	= AEFCellReport(str_link, str_message)
-				sheet_report.add_cell_report(cell_report)
+				sheet_report.add_cell_report(self.template_sheet_name, cell, str_message)
 				return False
 		elif (re.fullmatch(field_reg_exp, str(cell.value))) == None:
 			str_message	= "Cell content error: The value provided for '" + field_name + field_error_mesg
-			self.add_comment(cell, str_message)
-			str_link	= "#'" + self.template_sheet_name + "'" + "!" + self.coord2cell_ref(x_target_row, x_target_column)
-			cell_report	= AEFCellReport(str_link, str_message)
-			sheet_report.add_cell_report(cell_report)
+			sheet_report.add_cell_report(self.template_sheet_name, cell, str_message)
 			return False
 		return True
 
@@ -77,9 +85,9 @@ class AEFSheet:
 class RowFieldsSheet(AEFSheet):
 	"""Abstract superclass for checks syntax of worksheets with fields organised in rows."""
 
-	def check_field_names(self, sheet_report):
+	def check_field_names(self, book_report):
 	# Check the names of the field names (headings) in the sheet correspond with those in the field_names array
-	#
+
 		heading_column		= 0
 		fields_start_column	= 0
 		fields_end_column	= 0
@@ -87,6 +95,8 @@ class RowFieldsSheet(AEFSheet):
 		template_fields		= self.field_names
 		n_template_fields	= len(template_fields)
 		worksheet			= self.worksheet
+		sheet_report	= AEFSheetReport(self.template_sheet_name, 3)
+		book_report.add_sheet_report(sheet_report)
 		for column in worksheet.iter_rows(min_row=worksheet.min_row, max_row=worksheet.max_row, min_col=worksheet.min_column, max_col=worksheet.max_column):
 			if (field_headings_row > 0):
 				break
@@ -111,26 +121,7 @@ class RowFieldsSheet(AEFSheet):
 					else:
 						break
 
-		str_link	= "#" + self.template_sheet_name + "!A1"
-		if (heading_column == 0):
-			cell_report	= AEFCellReport(str_link, "Could not find '" + template_fields[0] + "' heading in the '" + template_fields[0] + "' worksheet.")
-			sheet_report.add_cell_report(cell_report)
-#			str_results[0]	+= "\n\t\tCould not find '" + template_fields[0] + "' heading in the '" + template_fields[0] + "' worksheet."
-			return False
-		elif (fields_start_column == 0):
-			cell_report	= AEFCellReport(str_link, "Could not find '" + template_fields[1] + "' heading in the '" + template_fields[0] + "' worksheet.")
-			sheet_report.add_cell_report(cell_report)
-#			str_results[0]	+= "\n\t\tCould not find '" + template_fields[1] + "' heading in the '" + template_fields[0] + "' worksheet."
-			return False
-		elif (fields_end_column == 0):
-			cell_report	= AEFCellReport(str_link, "Could not find '" + template_fields[n_template_fields - 1] + "' heading in the '" + template_fields[0] + "' worksheet.")
-			sheet_report.add_cell_report(cell_report)
-#			str_results[0]	+= "\n\t\tCould not find '" + template_fields[n_template_fields - 1] + "' heading in the '" + template_fields[0] +"' worksheet."
-			return False
-		elif ((fields_end_column - fields_start_column - n_blank_cells + 1) != (n_template_fields - 1)):	# (n_template_fields - 1) as the first element of array is sheet name
-			cell_report	= AEFCellReport(str_link, "Could not find '" + template_fields[0] + "' heading in the '" + template_fields[0] + "' worksheet.")
-			sheet_report.add_cell_report(cell_report)
-#			str_results[0]	+= "\n\t\tNumber of fields in '" + template_fields[0] + "' worksheet is incorrect."
+		if (self.check_fields_dimensions(heading_column, fields_start_column, fields_end_column, n_blank_cells, worksheet, template_fields, sheet_report)) is False:
 			return False
 
 		dest_fields	= []
@@ -139,19 +130,18 @@ class RowFieldsSheet(AEFSheet):
 
 		for x_field in range (1, n_template_fields):
 			if (template_fields[x_field] in dest_fields[0]) is False:
-				cell_report	= AEFCellReport(str_link, "The field '" + template_fields[x_field] + "' cannot be found in '" + template_fields[0] + " worksheet.")
-				sheet_report.add_cell_report(cell_report)
-#				str_results[0]	+= "\n\t\tThe field '" + template_fields[x_field] + "' cannot be found in '" + template_fields[0] + " worksheet."
+				sheet_report.add_cell_report(self.template_sheet_name, worksheet.cell(1,1), "The field '" + template_fields[x_field] + "' cannot be found in worksheet")
 				return False
+
+		sheet_report.add_cell_report(self.template_sheet_name, worksheet.cell(1,1), "All fields found.")
 		return True
 
 
 	def check_content(self, check_report):
 	# Check the contents of the fields in the sheet are syntactically correct
-	#
-		sheet_report	= AEFSheetReport("Checking the content of '" + self.template_sheet_name + "'")
+	
+		sheet_report	= AEFSheetReport(self.template_sheet_name, 3)
 		check_report.add_sheet_report(sheet_report)
-#		str_results[0]	+= "\n\tChecking the content of '" + self.template_sheet_name + "'"
 
 		fields_start_column	= 0
 		fields_end_column	= 0
@@ -312,7 +302,7 @@ class ColumnFieldsSheet(AEFSheet):
 	"""Abstract superclass for checking worksheets with fields organised in columns."""
 
 
-	def check_field_names(self, str_results):
+	def check_field_names(self, book_report):
 		heading_row			= 0
 		fields_start_row	= 0
 		fields_end_row		= 0
@@ -320,6 +310,11 @@ class ColumnFieldsSheet(AEFSheet):
 		template_fields		= self.field_names
 		n_template_fields	= len(template_fields)
 		worksheet			= self.worksheet
+		str_subheading		= self.template_sheet_name
+		if (self.template_sheet_name == "Summary information"):
+			str_subheading	+= ": " + template_fields[0]
+		sheet_report		= AEFSheetReport(str_subheading, 3)
+		book_report.add_sheet_report(sheet_report)
 		for row in worksheet.iter_cols(min_row=worksheet.min_row, max_row=worksheet.max_row, min_col=worksheet.min_column, max_col=worksheet.max_column):
 			for cell in row:
 				if ((cell.data_type == "s") and (cell.value.casefold() == template_fields[0].casefold())):
@@ -332,17 +327,7 @@ class ColumnFieldsSheet(AEFSheet):
 				elif ((fields_start_row > 0) and (cell.data_type == "s") and (cell.value.casefold() == template_fields[n_template_fields - 1].casefold())):
 					fields_end_row	= cell.row
 					break
-		if (heading_row == 0):
-			str_results[0]	+= "\n\t\tCould not find '" + template_fields[0] + "' section in '" + worksheet.title + "' worksheet."
-			return False
-		elif (fields_start_row == 0):
-			str_results[0]	+= "\n\t\tCould not find '" + template_fields[1] + "' field in '" + worksheet.title + "' worksheet."
-			return False
-		elif (fields_end_row == 0):
-			str_results[0]	+= "\n\t\tCould not find '" + template_fields[n_template_fields - 1] + "' field in '" + worksheet.title + "' worksheet."
-			return False
-		elif ((fields_end_row - fields_start_row + 1) != n_template_fields - 1):
-			str_results[0]	+= "\n\t\tNumber of fields for the '" + template_fields[0] + "' in '" + worksheet.title + "' worksheet is incorrect."
+		if (self.check_fields_dimensions(heading_row, fields_start_row, fields_end_row, 0, worksheet, template_fields, sheet_report)) is False:
 			return False
 
 		dest_fields	= []
@@ -351,8 +336,9 @@ class ColumnFieldsSheet(AEFSheet):
 
 		for x_field in range (1, n_template_fields):
 			if (template_fields[x_field] in dest_fields[0]) is False:
-				str_results[0]	+= "\n\t\tThe field '" + template_fields[x_field] + "' cannot be found in '" + template_fields[0] + "' of the Summary worksheet."
+				sheet_report.add_cell_report(self.template_sheet_name, worksheet.cell(1,1), "Could not find '" + template_fields[x_field] + "' field in worksheet.")
 				return False
+		sheet_report.add_cell_report(self.template_sheet_name, worksheet.cell(1,1), "All fields found.")
 		return True
 
 
@@ -457,23 +443,8 @@ class AEFSummary(ColumnFieldsSheet):
 
 
 	def check_structure(self, workbook, field_names, check_report):
-		sheet_report	= AEFSheetReport(self.template_sheet_name)
-		check_report.add_sheet_report(sheet_report)
-#		str_results[0]	+= "\n\tChecking the structure of '" + self.template_sheet_name + "'"
-
 		self.set_field_names(field_names)
-		dest_names	= workbook.sheetnames
-		worksheet	= None
-		for dest_name in dest_names:
-			if dest_name == self.template_sheet_name:
-				worksheet 		= workbook[dest_name]
-				self.worksheet	= worksheet
-				break
-		if (worksheet == None):
-			cell_report	= AEFCellReport(None, "Could not find worksheet '" + self.template_sheet_name + "'.")
-			sheet_report.add_cell_report(cell_report)
-#			str_results[0]	+= "\n\tCould not find worksheet '" + self.template_sheet_name + "'."
-
+		self.worksheet	= workbook[self.template_sheet_name]
 		for x_table in range (0, 4):
 			self.field_names	= field_names[x_table]
 			if (self.check_field_names(check_report)) is False:
@@ -490,10 +461,8 @@ class AEFSummary(ColumnFieldsSheet):
 
 
 class AEFSubmission(ColumnFieldsSheet):
-
 	def __init__(self, worksheet, field_names):
 		self.template_sheet_name	= "Table 1 Submission"
-
 		self.field_reg_exp_tuples	=	[
 											["Party", "[A-Z][A-Za-z \(\)\']+", "'' is not a recognised Party Name."],	# Capitalised alphabet string contains spaces, brackets, apostrophes
 											["Version", "[0-9]+\.[0-9]+", "' must conform to X.Y."],
@@ -509,8 +478,7 @@ class AEFSubmission(ColumnFieldsSheet):
 
 
 	def check_content(self, check_report):
-
-		sheet_report	= AEFSheetReport("Checking the content of '" + self.template_sheet_name + "'")
+		sheet_report	= AEFSheetReport(self.template_sheet_name, 3)
 		check_report.add_sheet_report(sheet_report)
 
 		fields_start_row	= 0
@@ -548,18 +516,10 @@ class AEFSubmission(ColumnFieldsSheet):
 		if (cell.data_type == 'd'):
 			if (re.match(field_reg_exp, str(cell.number_format)) == None):
 				str_message	= "Cell content error: The value provided for '" + field_name + " must be in the format dd/mm/yyyy"
-				self.add_comment(cell, str_message)
-				# str_link	= "#" + self.template_sheet_name + "!" + self.coord2cell_ref(x_target_row, x_target_column)
-				str_link	= self.template_sheet_name + "!" + self.coord2cell_ref(x_target_row, x_target_column)
-				cell_report	= AEFCellReport(str_link, str_message)
-				sheet_report.add_cell_report(cell_report)
+				sheet_report.add_cell_report(self.template_sheet_name, cell, str_message)
 				return False
 		elif (re.fullmatch(field_reg_exp, str(cell.value))) == None:
 			str_message	= "Cell content error: The value provided for '" + field_name + field_error_mesg
-			self.add_comment(cell, str_message)
-			# str_link	= "#" + self.template_sheet_name + "!" + self.coord2cell_ref(x_target_row, x_target_column)
-			str_link	= self.template_sheet_name + "!" + self.coord2cell_ref(x_target_row, x_target_column)
-			cell_report	= AEFCellReport(str_link, str_message)
-			sheet_report.add_cell_report(cell_report)
+			sheet_report.add_cell_report(self.template_sheet_name, cell, str_message)
 			return False
 		return True

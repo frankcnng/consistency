@@ -10,7 +10,6 @@
 import aefsheets
 
 from syntaxreport.AEFSheetReport import AEFSheetReport
-from syntaxreport.AEFCellReport import AEFCellReport
 
 
 class AEFStructureCheck:
@@ -34,6 +33,7 @@ class AEFStructureCheck:
 
 
 	def check(self, workbook, worksheets, field_names, check_report):
+		check_report.add_sheet_report(AEFSheetReport("Structure check", 2))
 		if (self.check_sheet_count(workbook, check_report)) is False:
 			return False
 		if (self.check_sheet_names(workbook, worksheets, check_report)) is False:
@@ -42,33 +42,23 @@ class AEFStructureCheck:
 
 
 	def check_sheet_count(self, workbook, check_report):
-		sheet_report	= AEFSheetReport("Check sheet count")
-		check_report.add_sheet_report(sheet_report)
 		if (len(workbook.sheetnames) != (self.sheet_count)):
-			cell_report	= AEFCellReport(None, "Incorrect number of worksheets in workbook")
-			sheet_report.add_cell_report(cell_report)
+			check_report.add_sheet_report(AEFSheetReport("Incorrect number of worksheets in workbook", 3))
 			return False
 		else:
-			cell_report	= AEFCellReport(None, "Correct number of worksheets in workbook.")
-			sheet_report.add_cell_report(cell_report)
+			check_report.add_sheet_report(AEFSheetReport("Correct number of worksheets in workbook", 3))
 			return True
 
 
 	def check_sheet_names(self, workbook, worksheets, check_report):
 		dest_names		= workbook.sheetnames
 		for source_name in self.sheet_names:
-			sheet_report	= AEFSheetReport(source_name)
-			check_report.add_sheet_report(sheet_report)
 			if (source_name in dest_names) is False:
-				cell_report	= AEFCellReport(None, "The worksheet '" + source_name + "'' was not found.")
-				sheet_report.add_cell_report(cell_report)
+				check_report.add_sheet_report(AEFSheetReport("The worksheet '" + source_name + "'' was not found.", 3))
 				return False
 			else:
 				worksheets.append(workbook[source_name])
-		sheet_report	= AEFSheetReport("")
-		check_report.add_sheet_report(sheet_report)
-		cell_report	= AEFCellReport(None, "All workseets found in workbook.")
-		sheet_report.add_cell_report(cell_report)
+		check_report.add_sheet_report(AEFSheetReport("All worksheets found in workbook.", 3))
 		return True
 
 

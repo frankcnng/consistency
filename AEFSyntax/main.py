@@ -53,11 +53,8 @@ def check_file(str_path, str_file):
 	if structureCheck.check(workbook, worksheets, field_names, check_report) is False:
 		check_report.is_valid = False
 	else:
-		contentCheck = AEFContentCheck()
-		if contentCheck.check(worksheets, field_names, check_report) is False:
-			check_report.is_valid = False
-		else:
-			check_report.is_valid = True
+		contentCheck 			= AEFContentCheck()
+		check_report.is_valid	= contentCheck.check(worksheets, field_names, check_report)
 	check_report.print(workbook)
 	
 	workbook.save(str_path)
