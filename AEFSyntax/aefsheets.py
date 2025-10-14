@@ -48,15 +48,13 @@ class AEFSheet:
 		field_reg_exp_tuple	= self.field_reg_exp_tuples[x_tuple]
 		field_name			= field_reg_exp_tuple[0]
 		field_reg_exp		= field_reg_exp_tuple[1]
-
 		if (field_reg_exp == ""):
 			return True
-
 		field_error_mesg	= field_reg_exp_tuple[2]
 		cell				= self.worksheet.cell(x_target_row, x_target_column)
-		if (re.match("^blankable", field_reg_exp) != None):	# if the cell can be either blank, of a defined set of values
-			if (cell.value == None):	# if the cell is empty
-				return True
+		# if the cell can be either blank, of a defined set of values/regexp
+		if ((re.match("^blankable", field_reg_exp) != None) and (cell.value == None)):
+			return True
 
 		if (cell.data_type == 'd'):
 			if (re.match(field_reg_exp, str(cell.number_format)) == None):
@@ -128,13 +126,14 @@ class RowFieldsSheet(AEFSheet):
 		for column in worksheet.iter_rows(min_col=fields_start_column, max_col=fields_end_column, min_row=field_headings_row, max_row=field_headings_row, values_only=True):
 			dest_fields.append(column)
 
+		is_valid	= True
 		for x_field in range (1, n_template_fields):
 			if (template_fields[x_field] in dest_fields[0]) is False:
 				sheet_report.add_cell_report(self.template_sheet_name, worksheet.cell(1,1), "The field '" + template_fields[x_field] + "' cannot be found in worksheet")
-				return False
-
-		sheet_report.add_cell_report(self.template_sheet_name, worksheet.cell(1,1), "All fields found.")
-		return True
+				is_valid	= False
+		if (is_valid):
+			sheet_report.add_cell_report(self.template_sheet_name, worksheet.cell(1,1), "All fields found.")
+		return is_valid
 
 
 	def check_content(self, check_report):
@@ -162,11 +161,12 @@ class RowFieldsSheet(AEFSheet):
 		row			= fields_row + 1	# content is in the row after the field names
 		x_tuple		= 0
 		is_valid	= True
-
 		for x_column in range(fields_start_column, fields_end_column):
 			if (self.check_cell_content(row, x_column, x_tuple, sheet_report)) is False:
 				is_valid	= False
 			x_tuple	+= 1
+		if (is_valid):
+			sheet_report.add_cell_report(self.template_sheet_name, worksheet.cell(1,1), "All field content valid.")
 		return is_valid
 
 
@@ -504,22 +504,6 @@ class AEFSubmission(ColumnFieldsSheet):
 			if (self.check_cell_content(x_row, column, x_tuple, sheet_report)) is False:
 				is_valid	= False
 			x_tuple	+= 1
+		if (is_valid):
+			sheet_report.add_cell_report(self.template_sheet_name, worksheet.cell(1,1), "All field content valid.")
 		return is_valid
-
-
-	def check_cell_content(self, x_target_row, x_target_column, x_tuple, sheet_report):
-		field_reg_exp_tuple	= self.field_reg_exp_tuples[x_tuple]
-		field_name			= field_reg_exp_tuple[0]
-		field_reg_exp		= field_reg_exp_tuple[1]
-		field_error_mesg	= field_reg_exp_tuple[2]
-		cell	= self.worksheet.cell(x_target_row, x_target_column)
-		if (cell.data_type == 'd'):
-			if (re.match(field_reg_exp, str(cell.number_format)) == None):
-				str_message	= "Cell content error: The value provided for '" + field_name + " must be in the format dd/mm/yyyy"
-				sheet_report.add_cell_report(self.template_sheet_name, cell, str_message)
-				return False
-		elif (re.fullmatch(field_reg_exp, str(cell.value))) == None:
-			str_message	= "Cell content error: The value provided for '" + field_name + field_error_mesg
-			sheet_report.add_cell_report(self.template_sheet_name, cell, str_message)
-			return False
-		return True

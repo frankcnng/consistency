@@ -2,6 +2,7 @@
 
 # Load the openpyxl Excel library
 from openpyxl import load_workbook
+from openpyxl.styles import Font
 
 
 class AEFBookReport:
@@ -24,12 +25,10 @@ class AEFBookReport:
 
 	def print(self, workbook):
 		results_sheet	= workbook.create_sheet(title = "Syntax check results", index = 7)
-		x_row			= 1
-		x_column		= 1
-
-		results_sheet.cell(x_row, x_column, value=self.str_title)
-		x_row	+= 1
-
+		results_sheet.cell(1, 1, value=self.str_title)
+		results_sheet.cell(1, 1).font	= Font(bold=True)
+	
+		x_row	= 2
 		for sheet_report in self.sheet_reports:
 			x_row	= sheet_report.print(workbook, results_sheet, x_row)
 		x_row	+= 1

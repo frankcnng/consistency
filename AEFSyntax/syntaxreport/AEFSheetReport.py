@@ -1,6 +1,7 @@
 # AEFSheetReport.py
 
 from openpyxl.comments import Comment
+from openpyxl.styles import Font
 
 from syntaxreport.AEFCellReport import AEFCellReport
 
@@ -34,7 +35,9 @@ class AEFSheetReport:
 
 
 	def print(self, workbook, results_sheet, x_row):
-		results_sheet.cell(x_row, self.x_indent, value=self.str_title)
+		cell	= results_sheet.cell(x_row, self.x_indent, value=self.str_title)
+		if (self.x_indent == 2):
+			cell.font	= Font(italic=True)
 		x_row	+= 1
 		for cell_report in self.cell_reports:
 			cell_report.print(workbook, results_sheet, x_row)

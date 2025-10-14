@@ -1,5 +1,6 @@
 # AEFCellReport.py
 
+from openpyxl.styles import Font
 
 class AEFCellReport:
 
@@ -11,6 +12,7 @@ class AEFCellReport:
 	def print(self, workbook, results_sheet, x_row):
 		if (self.cell_ref != None):
 			cell			= results_sheet.cell(x_row, 4)
-			cell.hyperlink	= self.cell_ref
+			cell.font		= Font(color='0000FF', underline='single')
 			cell.value		= "Link"
+			cell.hyperlink	= self.cell_ref
 		results_sheet.cell(x_row, 5, value=self.str_mesg)
