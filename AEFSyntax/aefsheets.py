@@ -57,8 +57,9 @@ class AEFSheet:
 			return True
 
 		if (cell.data_type == 'd'):
-			if (re.match(field_reg_exp, str(cell.number_format)) == None):
-				str_message	= "Cell content error: The value provided for '" + field_name + " must be in the format dd/mm/yyyy"
+#			if (re.match(field_reg_exp, str(cell.number_format)) == None):
+			if (cell.is_date is False):
+				str_message	= "Cell content error: The value provided for '" + field_name + field_error_mesg
 				sheet_report.add_cell_report(self.template_sheet_name, cell, str_message)
 				return False
 		elif (re.fullmatch(field_reg_exp, str(cell.value))) == None:
@@ -195,7 +196,7 @@ class AEFAuthorizations(RowFieldsSheet):
 
 		self.field_reg_exp_tuples	=	[
 											["Authorization ID", "[A-Za-z0-9 \-]+", "' can only contain alphanumeric, space, and hyphen characters."],
-											["Date of authorization", "dd/mm/yyyy", "'' must be in the format: dd/mm/yyyy"],
+											["Date of authorization", "dd/mm/yyyy", "'' must be a valid date."],
 											["Cooperative approach ID", "CA\d{4}", "' must start with 'CA' followed by four digits."],
 											["Version of the authorization", "\d+", "' must be a number."],
 											["", "", ""],
@@ -207,13 +208,13 @@ class AEFAuthorizations(RowFieldsSheet):
 											["Activity type(s)", "[A-Za-z0-9 \+]+", "' can only contain alphanumeric, space, and '+' characters."],
 											["Purposes for authorization", "NDC|OIMP|IMP|OP|NDC and OIMP|NDC and IMP|NDC and OP", "' must be one of 'NDC', 'OIMP', 'IMP', 'OP', 'NDC and OIMP', 'NDC and IMP', or 'NDC and OP'."],
 											["Authorized Party(ies) ID", "[A-Z]{3}( *, *[A-Z]{3})*", "' must a comma-separated list of ISO 3166 alpha-3 codes."],
-											["Authorized entity(ies) ID", "[A-Za-z0-9 \-]+( *, *[A-Za-z0-9 \-]+)*", "' must a comma-separated list of entity names."],
+											["Authorized entity(ies) ID", "[A-Za-z0-9 \-\.\(\)]+( *, *[A-Za-z0-9 \-\.\(\)]+)*", "' must be a comma-separated list of entity names."],
 											["OIMP authorized by the Party", "", ""],
 											["Authorized timeframe", "blankable|^ *(?:Occurred|Use): from\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4}))\s+to\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4}))(?:(?:\.\s*Use:\s+from\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4}))\s+to\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4})))?) *$",\
 												"' must be empty or 'Occurred: from <date> to <date>', 'Use: from <date> to <date>', or 'Occurred: from <date> to <date>. Use: from <date> to <date>'\n where <date> is 'yyyy', 'mm/yyyy', or 'dd/mm/yyyy'."],
 											["Authorization terms and conditions", "", ""],
 											["Authorization documentation", "", ""],
-											["First transfer definition for OIMP", "blankable|Authorization|Issuance|Use of cancellation", "' must be empty or one of 'Authorization', 'Issuance', 'Use of cancellation;."],
+											["First transfer definition for OIMP", "blankable|NA|Authorization|Issuance|Use of cancellation", "' must be empty or one of 'NA', 'Authorization', 'Issuance', 'Use of cancellation;."],
 											["Additional explanatory information", "", ""]
 										]
 
@@ -227,15 +228,15 @@ class AEFActions(RowFieldsSheet):
 		self.template_sheet_name	= "Table 3 Actions"
 
 		self.field_reg_exp_tuples	=	[
-											["Action date", "dd/mm/yyyy", "'' must be in the format: dd/mm/yyyy"],
-											["Action type", "Acquistion|Transfer|Use|Cancellation|First transfer", "'' must be one of 'Acquistion', 'Transfer', 'Use', 'Cancellation', 'First transfer'"],
+											["Action date", "dd/mm/yyyy", "'' must be a valid date."],
+											["Action type", "Acquisition|Transfer|Use|Cancellation|First transfer", "'' must be one of 'Acquisition', 'Transfer', 'Use', 'Cancellation', 'First transfer'"],
 											["Action subtype", "", ""],
 											["Cooperative approach ID", "CA\d{4}", "' must start with 'CA' followed by four digits."],
 											["Authorization ID", "[A-Za-z0-9 \-]+", "' can only contain alphanumeric, space, and hyphen characters."],
 											["First transferring participating Party ID", "[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],
 											["Party ITMO registry ID", "[A-Z]{3}\d{2}", "' must be a Party ID followed by two digits"],
-											["First ID", "CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-[1-9]\d{0,2}(?:,\d{3})*-\d{4}", "' must be an ITMO unique identifier as per 6/CMA.4 annex I para.5."],
-											["Last ID", "CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-[1-9]\d{0,2}(?:,\d{3})*-\d{4}", "' must be an ITMO unique identifier as per 6/CMA.4 annex I para.5."],
+											["First ID", "CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-[1-9]\d{0,2}((\d*)|(,\d{3})*)-\d{4}", "' must be an ITMO unique identifier as per 6/CMA.4 annex I para.5."],
+											["Last ID", "CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-[1-9]\d{0,2}((\d*)|(,\d{3})*)-\d{4}", "' must be an ITMO unique identifier as per 6/CMA.4 annex I para.5."],
 											["", "", ""],
 											["Underlying unit registry ID", "", ""],
 											["First unit ID", "", ""],
@@ -276,8 +277,8 @@ class AEFHoldings(RowFieldsSheet):
 											["Authorization ID", "[A-Za-z0-9 \-]+", "' can only contain alphanumeric, space, and hyphen characters."],
 											["First transferring participating Party ID", "[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],
 											["Party ITMO registry ID", "[A-Z]{3}\d{2}", "' must be a Party ID followed by two digits"],
-											["First ID", "CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-[1-9]\d{0,2}(?:,\d{3})*-\d{4}", "' must be an ITMO unique identifier as per 6/CMA.4 annex I para.5."],
-											["Last ID", "CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-[1-9]\d{0,2}(?:,\d{3})*-\d{4}", "' must be an ITMO unique identifier as per 6/CMA.4 annex I para.5."],
+											["First ID", "CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-[1-9]\d{0,2}((\d*)|(,\d{3})*)-\d{4}", "' must be an ITMO unique identifier as per 6/CMA.4 annex I para.5."],
+											["Last ID", "CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-[1-9]\d{0,2}((\d*)|(,\d{3})*)-\d{4}", "' must be an ITMO unique identifier as per 6/CMA.4 annex I para.5."],
 											["", "", ""],
 											["Underlying unit registry ID", "", ""],
 											["First unit ID", "", ""],
@@ -303,7 +304,7 @@ class AEFAuthEntities(RowFieldsSheet):
 		self.template_sheet_name	= "Table 5 Auth. entities"
 
 		self.field_reg_exp_tuples	=	[
-											["Date of the authorization", "blankable|dd/mm/yyyy", "'' must be in the format: dd/mm/yyyy"],
+											["Date of the authorization", "blankable|dd/mm/yyyy", "'' must be a valid date."],
 											["Name", "", ""],
 											["Country of incorporation", "blankable|[A-Z][A-Za-z \(\)\']+", "'' is not a recognised Party Name."],	# Capitalised alphabet string contains spaces, brackets, apostrophes],
 											["Identification number", "", ""],
@@ -485,7 +486,7 @@ class AEFSubmission(ColumnFieldsSheet):
 											["Party", "[A-Z][A-Za-z \(\)\']+", "'' is not a recognised Party Name."],	# Capitalised alphabet string contains spaces, brackets, apostrophes
 											["Version", "[0-9]+\.[0-9]+", "' must conform to X.Y."],
 											["Reported year", "\d{4}", "'' must be a four digit year."],
-											["Date of submission", "dd/mm/yyyy", "'' must be in the format: dd/mm/yyyy"],
+											["Date of submission", "dd/mm/yyyy", "'' must be a valid date"],
 											["Review status of the initial report", "\{Information in this field is populated by the CARP\}", "' must not be changed.  It is for secretariat use."],
 											["Result of the consistency check of this AEF submission", "\{Information in this field is populated by the CARP\}", "'' must not be changed.  It is for secretariat use."],
 											["First year of the NDC implementation period", "\d{4}", "'' must be a four digit year."],
