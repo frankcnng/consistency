@@ -158,13 +158,30 @@ class RowFieldsSheet(AEFSheet):
 					fields_end_column	= cell.column
 					break
 
-		row			= fields_row + 1	# content is in the row after the field names
-		x_tuple		= 0
+		x_row		= fields_row + 1	# content is in the row after the field names
 		is_valid	= True
-		for x_column in range(fields_start_column, fields_end_column):
-			if (self.check_cell_content(row, x_column, x_tuple, sheet_report)) is False:
-				is_valid	= False
-			x_tuple	+= 1
+		is_empty	= False
+		while (is_empty) is False:
+			is_empty	= True
+			for x_column in range(fields_start_column, fields_end_column):
+				if (worksheet.cell(x_row, x_column).value != None):
+					is_empty	= False
+			x_row	+= 1
+		x_last_row	= x_row - 1
+
+
+		is_valid	= True
+		for x_row in range(fields_row + 1, x_last_row):
+			is_empty	= True
+			x_tuple		= 0
+			for x_column in range(fields_start_column, fields_end_column):
+				# if (worksheet.cell(x_row, x_column).value != None):
+				# 	is_empty	= False
+				if (self.check_cell_content(x_row, x_column, x_tuple, sheet_report)) is False:
+					is_valid	= False
+				x_tuple	+= 1
+			x_row	+= 1
+
 		if (is_valid):
 			sheet_report.add_cell_report(self.template_sheet_name, worksheet.cell(1,1), "All field content valid.")
 		return is_valid
@@ -187,12 +204,13 @@ class AEFAuthorizations(RowFieldsSheet):
 											["Applicable GWP value(s)", "", ""],
 											["Applicable non-GHG metric", "", ""],
 											["Sector(s)", "[A-Za-z0-9 ]+", "' can only contain alphanumeric, and space characters."],
-											["Activity type(s)", "[A-Za-z0-9 ]+", "' can only contain alphanumeric, and space characters."],
+											["Activity type(s)", "[A-Za-z0-9 \+]+", "' can only contain alphanumeric, space, and '+' characters."],
 											["Purposes for authorization", "NDC|OIMP|IMP|OP|NDC and OIMP|NDC and IMP|NDC and OP", "' must be one of 'NDC', 'OIMP', 'IMP', 'OP', 'NDC and OIMP', 'NDC and IMP', or 'NDC and OP'."],
 											["Authorized Party(ies) ID", "[A-Z]{3}( *, *[A-Z]{3})*", "' must a comma-separated list of ISO 3166 alpha-3 codes."],
 											["Authorized entity(ies) ID", "[A-Za-z0-9 \-]+( *, *[A-Za-z0-9 \-]+)*", "' must a comma-separated list of entity names."],
 											["OIMP authorized by the Party", "", ""],
-											["Authorized timeframe", "blankable|(\d{4} *\- *\d{4})*", "' must be empty of a year range (dddd - dddd)"],
+											["Authorized timeframe", "blankable|^ *(?:Occurred|Use): from\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4}))\s+to\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4}))(?:(?:\.\s*Use:\s+from\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4}))\s+to\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4})))?) *$",\
+												"' must be empty or 'Occurred: from <date> to <date>', 'Use: from <date> to <date>', or 'Occurred: from <date> to <date>. Use: from <date> to <date>'\n where <date> is 'yyyy', 'mm/yyyy', or 'dd/mm/yyyy'."],
 											["Authorization terms and conditions", "", ""],
 											["Authorization documentation", "", ""],
 											["First transfer definition for OIMP", "blankable|Authorization|Issuance|Use of cancellation", "' must be empty or one of 'Authorization', 'Issuance', 'Use of cancellation;."],
@@ -216,8 +234,8 @@ class AEFActions(RowFieldsSheet):
 											["Authorization ID", "[A-Za-z0-9 \-]+", "' can only contain alphanumeric, space, and hyphen characters."],
 											["First transferring participating Party ID", "[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],
 											["Party ITMO registry ID", "[A-Z]{3}\d{2}", "' must be a Party ID followed by two digits"],
-											["First ID", "", ""],
-											["Last ID", "", ""],
+											["First ID", "CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-[1-9]\d{0,2}(?:,\d{3})*-\d{4}", "' must be an ITMO unique identifier as per 6/CMA.4 annex I para.3."],
+											["Last ID", "CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-[1-9]\d{0,2}(?:,\d{3})*-\d{4}", "' must be an ITMO unique identifier as per 6/CMA.4 annex I para.3."],
 											["", "", ""],
 											["Underlying unit registry ID", "", ""],
 											["First unit ID", "", ""],
@@ -258,8 +276,8 @@ class AEFHoldings(RowFieldsSheet):
 											["Authorization ID", "[A-Za-z0-9 \-]+", "' can only contain alphanumeric, space, and hyphen characters."],
 											["First transferring participating Party ID", "[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],
 											["Party ITMO registry ID", "[A-Z]{3}\d{2}", "' must be a Party ID followed by two digits"],
-											["First ID", "", ""],
-											["Last ID", "", ""],
+											["First ID", "CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-[1-9]\d{0,2}(?:,\d{3})*-\d{4}", "' must be an ITMO unique identifier as per 6/CMA.4 annex I para.3."],
+											["Last ID", "CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-[1-9]\d{0,2}(?:,\d{3})*-\d{4}", "' must be an ITMO unique identifier as per 6/CMA.4 annex I para.3."],
 											["", "", ""],
 											["Underlying unit registry ID", "", ""],
 											["First unit ID", "", ""],

@@ -3,6 +3,7 @@
 from openpyxl.styles import Font
 
 class AEFCellReport:
+	"""Class reponsible for producing the syntax check report for an AEF cell."""
 
 	def __init__(self, cell_ref, str_mesg):
 		self.cell_ref	= cell_ref

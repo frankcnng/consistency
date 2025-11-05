@@ -7,6 +7,7 @@ from syntaxreport.AEFCellReport import AEFCellReport
 
 
 class AEFSheetReport:
+	"""Class reponsible for producing the syntax check report for an AEF worksheet."""
 
 	def __init__(self, str_title, x_indent):
 		self.str_title      = str_title

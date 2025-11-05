@@ -6,6 +6,7 @@ from openpyxl.styles import Font
 
 
 class AEFBookReport:
+	"""Class reponsible for producing the syntax check report for the AEF workbook."""
 
 	def __init__(self, str_title):
 		self.str_title      = str_title
