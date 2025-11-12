@@ -57,11 +57,15 @@ class AEFSheet:
 			return True
 
 		if (cell.data_type == 'd'):
-#			if (re.match(field_reg_exp, str(cell.number_format)) == None):
-			if (cell.is_date is False):
+			if (re.match(field_reg_exp, str(cell.number_format)) == None):
 				str_message	= "Cell content error: The value provided for '" + field_name + field_error_mesg
 				sheet_report.add_cell_report(self.template_sheet_name, cell, str_message)
 				return False
+		elif ((field_reg_exp == '\d+\.\d+') and (cell.data_type == 'n')):
+			if (re.match(field_reg_exp, str(cell.number_format)) == None):
+				str_message	= "Cell content error: The value provided for '" + field_name + field_error_mesg
+				sheet_report.add_cell_report(self.template_sheet_name, cell, str_message)
+				return False				
 		elif (re.fullmatch(field_reg_exp, str(cell.value))) == None:
 			str_message	= "Cell content error: The value provided for '" + field_name + field_error_mesg
 			sheet_report.add_cell_report(self.template_sheet_name, cell, str_message)
@@ -164,24 +168,21 @@ class RowFieldsSheet(AEFSheet):
 		is_empty	= False
 		while (is_empty) is False:
 			is_empty	= True
-			for x_column in range(fields_start_column, fields_end_column):
+			for x_column in range(fields_start_column, fields_end_column + 1):
 				if (worksheet.cell(x_row, x_column).value != None):
 					is_empty	= False
-			x_row	+= 1
-		x_last_row	= x_row - 1
-
+					break
+			x_row	+= 1				# we get here when a full row is blank, thus the last populated row is x_row - 1 (before the increment)
+		x_last_row	= x_row - 2			# so the last populated row is x_row - 2.
 
 		is_valid	= True
-		for x_row in range(fields_row + 1, x_last_row):
+		for x_row in range(fields_row + 1, x_last_row + 1):
 			is_empty	= True
 			x_tuple		= 0
-			for x_column in range(fields_start_column, fields_end_column):
-				# if (worksheet.cell(x_row, x_column).value != None):
-				# 	is_empty	= False
+			for x_column in range(fields_start_column, fields_end_column + 1):
 				if (self.check_cell_content(x_row, x_column, x_tuple, sheet_report)) is False:
 					is_valid	= False
 				x_tuple	+= 1
-			x_row	+= 1
 
 		if (is_valid):
 			sheet_report.add_cell_report(self.template_sheet_name, worksheet.cell(1,1), "All field content valid.")
@@ -195,8 +196,8 @@ class AEFAuthorizations(RowFieldsSheet):
 		self.template_sheet_name	= "Table 2 Authorizations"
 
 		self.field_reg_exp_tuples	=	[
-											["Authorization ID", "[A-Za-z0-9 \-]+", "' can only contain alphanumeric, space, and hyphen characters."],
-											["Date of authorization", "dd/mm/yyyy", "'' must be a valid date."],
+											["Authorization ID", "[A-Za-z0-9 \-\/\.]+", "' can only contain alphanumeric, decimal point, space, hyphen, and slash characters."],
+											["Date of authorization", "dd/mm/yyyy", "' must be of the format 'dd/mm/yyyy'."],
 											["Cooperative approach ID", "CA\d{4}", "' must start with 'CA' followed by four digits."],
 											["Version of the authorization", "\d+", "' must be a number."],
 											["", "", ""],
@@ -207,14 +208,14 @@ class AEFAuthorizations(RowFieldsSheet):
 											["Sector(s)", "[A-Za-z0-9 ]+", "' can only contain alphanumeric, and space characters."],
 											["Activity type(s)", "[A-Za-z0-9 \+]+", "' can only contain alphanumeric, space, and '+' characters."],
 											["Purposes for authorization", "NDC|OIMP|IMP|OP|NDC and OIMP|NDC and IMP|NDC and OP", "' must be one of 'NDC', 'OIMP', 'IMP', 'OP', 'NDC and OIMP', 'NDC and IMP', or 'NDC and OP'."],
-											["Authorized Party(ies) ID", "[A-Z]{3}( *, *[A-Z]{3})*", "' must a comma-separated list of ISO 3166 alpha-3 codes."],
-											["Authorized entity(ies) ID", "[A-Za-z0-9 \-\.\(\)]+( *, *[A-Za-z0-9 \-\.\(\)]+)*", "' must be a comma-separated list of entity names."],
+											["Authorized Party(ies) ID", "blankable|NA|[A-Z]{3}( *, *[A-Z]{3})*", "' must a comma-separated list of ISO 3166 alpha-3 codes."],
+											["Authorized entity(ies) ID", "blankable|NA|[A-Za-z0-9 \-\.\(\)]+( *, *[A-Za-z0-9 \-\.\(\)]+)*", "' must be a comma-separated list of entity names."],
 											["OIMP authorized by the Party", "", ""],
-											["Authorized timeframe", "blankable|^ *(?:Occurred|Use): from\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4}))\s+to\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4}))(?:(?:\.\s*Use:\s+from\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4}))\s+to\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4})))?) *$",\
+											["Authorized timeframe", "blankable|NA|^ *(?:Occurred|Use): from\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4}))\s+to\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4}))(?:(?:\.\s*Use:\s+from\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4}))\s+to\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4})))?) *$",\
 												"' must be empty or 'Occurred: from <date> to <date>', 'Use: from <date> to <date>', or 'Occurred: from <date> to <date>. Use: from <date> to <date>'\n where <date> is 'yyyy', 'mm/yyyy', or 'dd/mm/yyyy'."],
 											["Authorization terms and conditions", "", ""],
 											["Authorization documentation", "", ""],
-											["First transfer definition for OIMP", "blankable|NA|Authorization|Issuance|Use of cancellation", "' must be empty or one of 'NA', 'Authorization', 'Issuance', 'Use of cancellation;."],
+											["First transfer definition for OIMP", "blankable|NA|Authorization|Issuance|Use or cancellation", "' must be empty or one of 'NA', 'Authorization', 'Issuance', 'Use or cancellation."],
 											["Additional explanatory information", "", ""]
 										]
 
@@ -228,11 +229,11 @@ class AEFActions(RowFieldsSheet):
 		self.template_sheet_name	= "Table 3 Actions"
 
 		self.field_reg_exp_tuples	=	[
-											["Action date", "dd/mm/yyyy", "'' must be a valid date."],
-											["Action type", "Acquisition|Transfer|Use|Cancellation|First transfer", "'' must be one of 'Acquisition', 'Transfer', 'Use', 'Cancellation', 'First transfer'"],
+											["Action date", "dd/mm/yyyy", "' must be of the format 'dd/mm/yyyy'."],
+											["Action type", "Acquisition|Transfer|Use|Cancellation|First transfer", "' must be one of 'Acquisition', 'Transfer', 'Use', 'Cancellation', 'First transfer'"],
 											["Action subtype", "", ""],
 											["Cooperative approach ID", "CA\d{4}", "' must start with 'CA' followed by four digits."],
-											["Authorization ID", "[A-Za-z0-9 \-]+", "' can only contain alphanumeric, space, and hyphen characters."],
+											["Authorization ID", "[A-Za-z0-9 \-\/\.]+", "' can only contain alphanumeric, decimal point, space, hyphen, and slash characters."],
 											["First transferring participating Party ID", "[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],
 											["Party ITMO registry ID", "[A-Z]{3}\d{2}", "' must be a Party ID followed by two digits"],
 											["First ID", "CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-[1-9]\d{0,2}((\d*)|(,\d{3})*)-\d{4}", "' must be an ITMO unique identifier as per 6/CMA.4 annex I para.5."],
@@ -245,19 +246,19 @@ class AEFActions(RowFieldsSheet):
 											["Metric", "GHG|non\-GHG", "' must 'GHG' or 'non-GHG'"],
 											["Applicable GWP value(s)", "", ""],
 											["Applicable non-GHG metric", "", ""],
-											["Quantity (t CO2 eq)", "blankable|\d+", "' must be a numerical value."],
-											["Quantity (in non-GHG metric)", "blankable|\d*", "' must be a numerical value."],
+											["Quantity (t CO2 eq)", "blankable|NA|\d+", "' must be a numerical value."],
+											["Quantity (in non-GHG metric)", "blankable|NA|\d*", "' must be a numerical value."],
 											["", "", ""],
 											["Mitigation type", "", ""],
-											["Vintage", "blankable|\d{4}", "' must be a year."],
+											["Vintage", "blankable|NA|\d{4}", "' must be a year."],
 											["", "", ""],
-											["Transferring participating Party ID", "blankable|[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],
-											["Acquiring participating Party ID",  "blankable|[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],
+											["Transferring participating Party ID", "blankable|NA|[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],
+											["Acquiring participating Party ID",  "blankable|NA|[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],
 											["", "", ""],
 											["Purpose for which the ITMO has been used towards or cancelled for OIMP", "", ""],
-											["Using/cancelling participating Party ID", "blankable|[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],
+											["Using/cancelling participating Party ID", "blankable|NA|[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],
 											["Using/cancelling authorized entity ID", "", ""],
-											["Calendar year for which the ITMOs are used towards the Party's NDC", "blankable|\d{4}", "' must be a year."],
+											["Calendar year for which the ITMOs are used towards the Party's NDC", "blankable|NA|\d{4}", "' must be a year."],
 											["", "", ""],
 											["Result of the consistency checks", "", ""],
 											["Additional explanatory information", "", ""]
@@ -291,7 +292,7 @@ class AEFHoldings(RowFieldsSheet):
 											["Quantity (in non-GHG metric)", "blankable|NA|\d+", "' must be a numerical value."],
 											["", "", ""],
 											["Mitigation type", "", ""],
-											["Vintage", "d{4}", "' must be a year."]
+											["Vintage", "\d{4}", "' must be a year."]
 										]
 
 		super().__init__(worksheet, field_names)
@@ -304,9 +305,9 @@ class AEFAuthEntities(RowFieldsSheet):
 		self.template_sheet_name	= "Table 5 Auth. entities"
 
 		self.field_reg_exp_tuples	=	[
-											["Date of the authorization", "blankable|dd/mm/yyyy", "'' must be a valid date."],
+											["Date of the authorization", "blankable|dd/mm/yyyy", "' must be of the format 'dd/mm/yyyy'"],
 											["Name", "", ""],
-											["Country of incorporation", "blankable|[A-Z][A-Za-z \(\)\']+", "'' is not a recognised Party Name."],	# Capitalised alphabet string contains spaces, brackets, apostrophes],
+											["Country of incorporation", "blankable|[A-Z][A-Za-z \(\)\']+", "' is not a recognised Party Name."],	# Capitalised alphabet string contains spaces, brackets, apostrophes],
 											["Identification number", "", ""],
 											["Cooperative approach ID", "blankable|CA\d{4}", "' must start with 'CA' followed by four digits."],
 											["Conditions", ""],
@@ -464,7 +465,7 @@ class AEFSummary(ColumnFieldsSheet):
 	def check_structure(self, workbook, field_names, check_report):
 		self.set_field_names(field_names)
 		self.worksheet	= workbook[self.template_sheet_name]
-		for x_table in range (0, 4):
+		for x_table in range (0, 5):
 			self.field_names	= field_names[x_table]
 			if (self.check_field_names(check_report)) is False:
 				return False
@@ -483,15 +484,15 @@ class AEFSubmission(ColumnFieldsSheet):
 	def __init__(self, worksheet, field_names):
 		self.template_sheet_name	= "Table 1 Submission"
 		self.field_reg_exp_tuples	=	[
-											["Party", "[A-Z][A-Za-z \(\)\']+", "'' is not a recognised Party Name."],	# Capitalised alphabet string contains spaces, brackets, apostrophes
-											["Version", "[0-9]+\.[0-9]+", "' must conform to X.Y."],
+											["Party", "[A-Z][A-Za-z \(\)\']+", "' is not a recognised Party Name."],	# Capitalised alphabet string contains spaces, brackets, apostrophes
+											["Version", "\d+\.\d+", "' must conform to X.Y."],
 											["Reported year", "\d{4}", "'' must be a four digit year."],
-											["Date of submission", "dd/mm/yyyy", "'' must be a valid date"],
+											["Date of submission", "dd/mm/yyyy", "' must be of the format 'dd/mm/yyyy'."],
 											["Review status of the initial report", "\{Information in this field is populated by the CARP\}", "' must not be changed.  It is for secretariat use."],
 											["Result of the consistency check of this AEF submission", "\{Information in this field is populated by the CARP\}", "'' must not be changed.  It is for secretariat use."],
-											["First year of the NDC implementation period", "\d{4}", "'' must be a four digit year."],
-											["Last year of the NDC implementation period", "\d{4}", "'' must be a four digit year."],
-											["Reference to the Article 6 technical expert review report of the initial report", "\{Link to be produced by the CARP\}", "'' must not be changed.  It is for secretariat use."]
+											["First year of the NDC implementation period", "\d{4}", "' must be a four digit year."],
+											["Last year of the NDC implementation period", "\d{4}", "' must be a four digit year."],
+											["Reference to the Article 6 technical expert review report of the initial report", "\{Link to be produced by the CARP\}", "' must not be changed.  It is for secretariat use."]
 										]
 		super().__init__(worksheet, field_names)
 
@@ -519,7 +520,7 @@ class AEFSubmission(ColumnFieldsSheet):
 		column		= fields_column + 1	# content is in the column after the field names
 		x_tuple		= 0
 		is_valid	= True
-		for x_row in range(fields_start_row, fields_end_row):
+		for x_row in range(fields_start_row, fields_end_row + 1):
 			if (self.check_cell_content(x_row, column, x_tuple, sheet_report)) is False:
 				is_valid	= False
 			x_tuple	+= 1

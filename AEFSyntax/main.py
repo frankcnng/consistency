@@ -15,8 +15,8 @@ from syntaxreport.AEFBookReport import AEFBookReport
 
 
 # The directory containing AEF files to be checked
-aef_dir	= "/Users/frankng/United Nations Framework Convention on Climate Change/Mitigation - Article 6.2/03_CARP/consistency/AEF_files/"
-#aef_dir	= "../AEF_files/"
+aef_dir	= "/Users/frankng/United Nations Framework Convention on Climate Change/Mitigation - Article 6.2/03_CARP/consistency/AEF_files.unchecked/"
+#aef_dir	= "../AEF_files.unchecked/"
 
 
 def main():
