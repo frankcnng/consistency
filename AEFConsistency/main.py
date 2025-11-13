@@ -1,6 +1,6 @@
 # main.py
 #
-# Checks the syntax of AEF files
+# Checks the consistency of AEF files
 #
 
 # Load os and shell libraries
@@ -15,36 +15,28 @@ from syntaxreport.AEFBookReport import AEFBookReport
 
 
 # The directory containing AEF files to be checked
-aef_dir			= "/Users/frankng/United Nations Framework Convention on Climate Change/Mitigation - Article 6.2/03_CARP/consistency/AEF_files/"
-unprocessed_dir	= aef_dir + "00.unprocessed/"
-processed_dir	= aef_dir + "99.processed/"
-passed_dir		= aef_dir + "10.syntax.passed/"
-failed_dir		= aef_dir + "11.syntax.failed/"
-#aef_dir		= "../AEF_files.00.unchecked/"
+aef_dir	= "/Users/frankng/United Nations Framework Convention on Climate Change/Mitigation - Article 6.2/03_CARP/consistency/AEF_files.unchecked/"
+#aef_dir	= "../AEF_files.unchecked/"
 
 
 def main():
-	"""Check all .xlsx files in aef_dir for valid AEF syntax.
+	"""Check all .xlsx files in aef_dir/current for AEF consistency.
+	The aef_dir
 	Files ending with '.syntax_checked.xlsx' are the output of this tool, and will be overwritten."""
 
-	files	= os.listdir(unprocessed_dir)
+	files	= os.listdir(aef_dir)
 	for str_file in files:
 		if (str_file.endswith(".xlsx")):
 			if str_file.endswith(".syntax_checked.xlsx"):
 				continue
 			else:
-				str_head	= str_file[:-5]
-				str_checked	= str_head + ".syntax_checked.xlsx"
-				dst_path	= unprocessed_dir + str_checked
-				src_path	= unprocessed_dir + str_file
+				str_head		= str_file[:-5]
+				dst_path	= aef_dir + str_head + ".syntax_checked.xlsx"
+				src_path	= aef_dir + str_file
 				shutil.copyfile(src_path, dst_path)
 
 				print ("\nChecking '" + str_file + "'")
-				if (check_file(dst_path, str_file)):
-					shutil.move(dst_path, passed_dir + str_checked)
-				else:
-					shutil.move(dst_path, failed_dir + str_checked)
-				shutil.move(src_path, processed_dir + str_file)
+				check_file(dst_path, str_file)
 
 
 def check_file(str_path, str_file):
@@ -67,7 +59,6 @@ def check_file(str_path, str_file):
 	check_report.print(workbook)
 	
 	workbook.save(str_path)
-	return check_report.is_valid
 
 
 if __name__ == "__main__":
