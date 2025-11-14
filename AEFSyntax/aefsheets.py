@@ -484,7 +484,7 @@ class AEFSubmission(ColumnFieldsSheet):
 	def __init__(self, worksheet, field_names):
 		self.template_sheet_name	= "Table 1 Submission"
 		self.field_reg_exp_tuples	=	[
-											["Party", "[A-Z][A-Za-z \(\)\']+", "' is not a recognised Party Name."],	# Capitalised alphabet string contains spaces, brackets, apostrophes
+											["Party", "[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],	# ISO 3166 alpha-3 country code
 											["Version", "\d+\.\d+", "' must conform to X.Y."],
 											["Reported year", "\d{4}", "'' must be a four digit year."],
 											["Date of submission", "dd/mm/yyyy", "' must be of the format 'dd/mm/yyyy'."],
