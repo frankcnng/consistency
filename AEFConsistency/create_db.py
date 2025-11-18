@@ -1,3 +1,5 @@
+# create_db.py
+
 import sqlite3
 import re
 from openpyxl import load_workbook
@@ -14,25 +16,25 @@ def create_tables(db_path):
     CREATE TABLE IF NOT EXISTS Submissions (
         party_Id                TEXT not null,
         reported_year           INTEGER not null,
-        version                 TEXT not null,
-        PRIMARY KEY (party_Id, reported_year, version),
+        major_version           INTEGER not null,
+        minor_version           INTEGER not null,
         date_of_submission      TEXT not null,
         consistency_status      TEXT,
-        NDC_period_start_year   INTEGER,
-        NDC_period_end_year     INTEGER
+        ndc_period_start_year   INTEGER,
+        ndc_period_end_year     INTEGER,
+        PRIMARY KEY (party_Id, reported_year, major_version, minor_version)
     );
     """)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Authorizations (
-        auth_id                     TEXT PRIMARY KEY,
+        auth_id                     TEXT not null,
         date                        REAL not null,
         version                     INTEGER not null,
-        PRIMARY KEY (auth_id, date, version),
         cooperative_approach_id     TEXT,
         authorised_quantity         INTEGER,
         metric                      TEXT,
         applicable_gwp_values       TEXT,
-        applicable_non-ghg_metric   TEXT,
+        applicable_nonghg_metric    TEXT,
         sectors                     TEXT,
         activity_types              TEXT,
         purposes_for_auth           TEXT,
@@ -40,13 +42,14 @@ def create_tables(db_path):
         authorized_entities         TEXT,
         oimp_authorized             TEXT,
         authorized_timeframe        TEXT,
-        auth_t&cs                   TEXT,
+        auth_tcs                    TEXT,
         auth_documentation          TEXT,
         first_transfer_defn4oimp    TEXT,
         reporting_party_Id          TEXT not null,
         reported_year               INTEGER not null,
         major_version               INTEGER not null,
         minor_version               INTEGER not null,
+        PRIMARY KEY (auth_id, date, version),
         FOREIGN KEY (reporting_party_Id, reported_year, major_version, minor_version)
             REFERENCES Submissions(party_Id, reported_year, major_version, minor_version)
     );
@@ -62,15 +65,14 @@ def create_tables(db_path):
         party_itmo_registry_id      TEXT not null,
         first_id                    TEXT not null,
         last_id                     TEXT not null,
-        PRIMARY KEY (action_date, action_type, party_itmo_registry_id, first_id, last_id),
         underlying_unit_registry_id TEXT,
         first_unit_id               TEXT,
         last_unit_id                TEXT,
         metric                      TEXT,
         applicable_gwp_values       TEXT,
-        applicable_non-ghg_metric   TEXT,
+        applicable_nonghg_metric    TEXT,
         quantity                    INTEGER,
-        quantity_non-ghg_metric     INTEGER,
+        quantity_nonghg_metric      INTEGER,
         mitigation_type             TEXT,
         vintage                     INTEGER,
         transferring_party_id       TEXT,
@@ -85,6 +87,7 @@ def create_tables(db_path):
         reported_year               INTEGER not null,
         major_version               INTEGER not null,
         minor_version               INTEGER not null,
+        PRIMARY KEY (action_date, action_type, party_itmo_registry_id, first_id, last_id),
         FOREIGN KEY (reporting_party_Id, reported_year, major_version, minor_version)
             REFERENCES Submissions(party_Id, reported_year, major_version, minor_version)
     );
@@ -102,9 +105,9 @@ def create_tables(db_path):
         last_unit_id                TEXT,
         metric                      TEXT,
         applicable_gwp_values       TEXT,
-        applicable_non-ghg_metric   TEXT,
+        applicable_nonghg_metric    TEXT,
         quantity                    INTEGER,
-        quantity_non-ghg_metric     INTEGER,
+        quantity_nonghg_metric      INTEGER,
         mitigation_type             TEXT,
         vintage                     INTEGER,
         reporting_party_Id          TEXT not null,
@@ -130,6 +133,7 @@ def create_tables(db_path):
         reported_year               INTEGER not null,
         major_version               INTEGER not null,
         minor_version               INTEGER not null,
+        PRIMARY KEY (date_of_authorization, name_of_entity, cooperative_approach_id, reporting_party_Id, reported_year, major_version, minor_version),
         FOREIGN KEY (reporting_party_Id, reported_year, major_version, minor_version)
             REFERENCES Submissions(party_Id, reported_year, major_version, minor_version)
     );

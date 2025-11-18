@@ -9,9 +9,9 @@ import os, shutil
 # Load the openpyxl Excel library
 from openpyxl import load_workbook
 import sqlite3
-import aef_sheet_check
 
-from AEFConsistency.create_db import create_tables
+import aef_sheet_check
+from create_db import create_tables
 
 
 # The directory containing AEF files to be checked
@@ -26,18 +26,18 @@ def main():
 	"""Check all .xlsx files in aef_dir/syntax_passed_dir for AEF consistency.
 	Files ending with '.consistency_checked.xlsx' are the output of this tool, and if any exist, will be overwritten."""
 
-	conn0	= sqlite3.connect(":memory:")	#create an in-memory database to create tables
-	conn0.close()							# this dummy statement gets around pylance's inability to find the sqlite3 import
+#	conn0	= sqlite3.connect(":memory:")	#create an in-memory database to create tables
+#	conn0.close()							# this dummy statement gets around pylance's inability to find the sqlite3 import
 	conn	= create_tables(":memory:")	#create an in-memory database for consistency checking
 	cursor	= conn.cursor()
-	load_submissions(syntax_passed_dir, cursor)	
-	check_submissions(cursor)
+	load_new_submissions(syntax_passed_dir, cursor)	
+#	check_submissions(cursor)
 
 
-def	load_submissions(str_path, cursor):
-	""""Load the file with pathname 'str_path' into the database.
-	The file has been syntax checked, so fields can be loaded into objects without checking.
-	The local name of the file is 'str_file'."""
+def	load_new_submissions(str_path, cursor):
+	""""Load the new submission files in pathname 'str_path' into the database.
+	The files have been syntax checked, so fields can be loaded into objects without checking.
+	"""
 
 	files	= os.listdir(str_path)
 	for str_file in files:
@@ -55,8 +55,17 @@ def	load_submissions(str_path, cursor):
 
 				print ("  Loading '" + str_file + "' into database...")
 				workbook	= load_workbook(dst_path, data_only=True)
-				submission_check	= aef_sheet_check.AEFSubmissionCheck(workbook)
-				submission_check.load_to_db(cursor)
+				load_workbook(workbook, cursor)
+	return
+
+def	load_workbook(workbook, cursor):
+	""""Load the workbook into the database.
+	The workbook has been syntax checked, so fields can be loaded into objects without checking."""
+
+	submission_check	= aef_sheet_check.AEFSubmissionCheck(workbook)
+	submission_check.load_to_db(cursor)
+	authorizations_check	= aef_sheet_check.AEFAuthorizationsCheck(workbook)
+	authorizations_check.load_to_db(cursor)
 
 	return
 

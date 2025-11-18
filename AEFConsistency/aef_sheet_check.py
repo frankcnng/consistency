@@ -1,9 +1,10 @@
+# aef_sheet_check.py
+
 import sqlite3
 import re
 from openpyxl import load_workbook
 
 
-# aefsheets.py
 
 from openpyxl.comments import Comment
 import re
@@ -25,35 +26,77 @@ class RowFieldsSheetCheck(AEFSheetCheck):
 
 class AEFAuthorizationsCheck(RowFieldsSheetCheck):
     """Concrete subclass to check AEF Authorizations worksheet."""
+    def __init__(self, workbook):
+        worksheet   = workbook["Table 2 Authorizations"]
+        labels	=	[
+                        "Table 2: Authorizations",
+                        ["Authorization ID", "auth_id"],
+                        ["Date of authorization", "date"],
+                        ["Cooperative approach ID", "cooperative_approach_id"],
+                        ["Version of the authorization", "version"],
+                        ["", ""],
+                        ["Authorized quantity", "authorised_quantity"],
+                        ["Metric", "metric"],
+                        ["Applicable GWP value(s)", "applicable_gwp_values"],
+                        ["Applicable non-GHG metric", "applicable_nonghg_metric"],
+                        ["Sector(s)", "sectors"],
+                        ["Activity type(s)", "activity_types"],
+                        ["Purposes for authorization", "purposes_for_auth"],
+                        ["Authorized Party(ies) ID", "authorized_parties"],
+                        ["Authorized entity(ies) ID", "authorized_entities"],
+                        ["OIMP authorized by the Party", "oimp_authorized"],
+                        ["Authorized timeframe", "authorized_timeframe"],
+                        ["Authorization terms and conditions", "auth_tcs"],
+                        ["Authorization documentation", "auth_documentation"],
+                        ["First transfer definition for OIMP", "first_transfer_defn4oimp"]
+                    ]
+        super().__init__(worksheet, labels)
+        return
 
-    def __init__(self, worksheet, field_names):
-        self.template_sheet_name	= "Table 2 Authorizations"
 
-        self.field_reg_exp_tuples	=	[
-                                            ["Authorization ID", "[A-Za-z0-9 \-\/\.]+", "' can only contain alphanumeric, decimal point, space, hyphen, and slash characters."],
-                                            ["Date of authorization", "dd/mm/yyyy", "' must be of the format 'dd/mm/yyyy'."],
-                                            ["Cooperative approach ID", "CA\d{4}", "' must start with 'CA' followed by four digits."],
-                                            ["Version of the authorization", "\d+", "' must be a number."],
-                                            ["", "", ""],
-                                            ["Authorized quantity", "\d+", "' must be a number."],
-                                            ["Metric", "GHG|non\-GHG", "' must 'GHG' or 'non-GHG'"],
-                                            ["Applicable GWP value(s)", "", ""],
-                                            ["Applicable non-GHG metric", "", ""],
-                                            ["Sector(s)", "[A-Za-z0-9 ]+", "' can only contain alphanumeric, and space characters."],
-                                            ["Activity type(s)", "[A-Za-z0-9 \+]+", "' can only contain alphanumeric, space, and '+' characters."],
-                                            ["Purposes for authorization", "NDC|OIMP|IMP|OP|NDC and OIMP|NDC and IMP|NDC and OP", "' must be one of 'NDC', 'OIMP', 'IMP', 'OP', 'NDC and OIMP', 'NDC and IMP', or 'NDC and OP'."],
-                                            ["Authorized Party(ies) ID", "blankable|NA|[A-Z]{3}( *, *[A-Z]{3})*", "' must a comma-separated list of ISO 3166 alpha-3 codes."],
-                                            ["Authorized entity(ies) ID", "blankable|NA|[A-Za-z0-9 \-\.\(\)]+( *, *[A-Za-z0-9 \-\.\(\)]+)*", "' must be a comma-separated list of entity names."],
-                                            ["OIMP authorized by the Party", "", ""],
-                                            ["Authorized timeframe", "blankable|NA|^ *(?:Occurred|Use): from\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4}))\s+to\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4}))(?:(?:\.\s*Use:\s+from\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4}))\s+to\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4})))?) *$",\
-                                                "' must be empty or 'Occurred: from <date> to <date>', 'Use: from <date> to <date>', or 'Occurred: from <date> to <date>. Use: from <date> to <date>'\n where <date> is 'yyyy', 'mm/yyyy', or 'dd/mm/yyyy'."],
-                                            ["Authorization terms and conditions", "", ""],
-                                            ["Authorization documentation", "", ""],
-                                            ["First transfer definition for OIMP", "blankable|NA|Authorization|Issuance|Use or cancellation", "' must be empty or one of 'NA', 'Authorization', 'Issuance', 'Use or cancellation."],
-                                            ["Additional explanatory information", "", ""]
-                                        ]
+    def load_to_db(self, cursor):
+        """Load the data from the worksheet into the database using the provided cursor.
+        """
+        
+        worksheet    = self.worksheet
+        start_row, start_column, end_row, end_column	= self.get_field_dimensions()
+        start_column += 1	# inital column of values is one past the labels column
 
-        super().__init__(worksheet, field_names)
+        party_id                = worksheet.cell(start_row, start_column).value
+        version                 = worksheet.cell(start_row + 1, start_column).value
+        reported_year	        = worksheet.cell(start_row + 2, start_column).value
+        date_of_submission	    = worksheet.cell(start_row + 3, start_column).value
+        consistency_status	    = worksheet.cell(start_row + 4, start_column).value
+        ndc_period_start_year	= worksheet.cell(start_row + 5, start_column).value
+        ndc_period_end_year	    = worksheet.cell(start_row + 6, start_column).value
+    
+        version_type    = type(version)
+        if (version_type == int):
+            major_version   = version
+            minor_version   = 0
+        elif (version_type == float):
+            str_version = "{:.1f}".format(version)
+            str_major_version, str_minor_version	= map(int, str_version.split('.'))
+            major_version	= int(str_major_version)
+            minor_version	= int(str_minor_version)
+        else:
+            str_version = str(version)
+            if '.' in str_version:
+                str_major_version, str_minor_version	= str_version.split('.')
+                major_version	= int(str_major_version)
+                minor_version	= int(str_minor_version)
+            else:
+                major_version	= int(str_version)
+                minor_version	= 0
+
+        cursor.execute("INSERT INTO Submissions (party_Id, major_version, minor_version, reported_year, date_of_submission, consistency_status, ndc_period_start_year, ndc_period_end_year) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (party_id, major_version, minor_version, reported_year, date_of_submission, consistency_status, ndc_period_start_year, ndc_period_end_year))
+
+        cursor.connection.commit()
+
+        return
+
+
+
 
 
 class AEFActionsCheck(RowFieldsSheetCheck):
@@ -164,8 +207,8 @@ class ColumnFieldsSheetCheck(AEFSheetCheck):
         nFields	        = len(labels)
         worksheet	    = self.worksheet
         str_heading     = labels[0].casefold()
-        str_first_field = labels[1].casefold()
-        str_last_field  = labels[nFields - 1].casefold()
+        str_first_field = labels[1][0].casefold()
+        str_last_field  = labels[nFields - 1][0].casefold()
         heading_row		= 0
         start_row	    = 0
         end_row		    = 0
@@ -188,46 +231,6 @@ class ColumnFieldsSheetCheck(AEFSheetCheck):
         return (start_row, start_column, end_row, end_column)
     
 
-    def check_field_names(self, book_report):
-        heading_row			= 0
-        fields_start_row	= 0
-        fields_end_row		= 0
-        fields_column		= 0
-        template_fields		= self.field_names
-        n_template_fields	= len(template_fields)
-        worksheet			= self.worksheet
-        str_subheading		= self.template_sheet_name
-        if (self.template_sheet_name == "Summary information"):
-            str_subheading	+= ": " + template_fields[0]
-        sheet_report		= AEFSheetReport(str_subheading, 3)
-        book_report.add_sheet_report(sheet_report)
-        for row in worksheet.iter_cols(min_row=worksheet.min_row, max_row=worksheet.max_row, min_col=worksheet.min_column, max_col=worksheet.max_column):
-            for cell in row:
-                if ((cell.data_type == "s") and (cell.value.casefold() == template_fields[0].casefold())):
-                    heading_row	= cell.row
-                    fields_column	= cell.column
-                    continue
-                elif ((heading_row > 0) and (cell.data_type == "s") and (cell.value.casefold() == template_fields[1].casefold())):
-                    fields_start_row	= cell.row
-                    continue
-                elif ((fields_start_row > 0) and (cell.data_type == "s") and (cell.value.casefold() == template_fields[n_template_fields - 1].casefold())):
-                    fields_end_row	= cell.row
-                    break
-        if (self.check_fields_dimensions(heading_row, fields_start_row, fields_end_row, 0, worksheet, template_fields, sheet_report)) is False:
-            return False
-
-        dest_fields	= []
-        for row in worksheet.iter_cols(min_col=fields_column, max_col=fields_column, min_row=fields_start_row, max_row=fields_end_row, values_only=True):
-            dest_fields.append(row)
-
-        for x_field in range (1, n_template_fields):
-            if (template_fields[x_field] in dest_fields[0]) is False:
-                sheet_report.add_cell_report(self.template_sheet_name, worksheet.cell(1,1), "Could not find '" + template_fields[x_field] + "' field in worksheet.")
-                return False
-        sheet_report.add_cell_report(self.template_sheet_name, worksheet.cell(1,1), "All fields found.")
-        return True
-
-
 
 class AEFSubmissionCheck(ColumnFieldsSheetCheck):
     """Concrete subclass for AEF Submission worksheet.
@@ -237,7 +240,7 @@ class AEFSubmissionCheck(ColumnFieldsSheetCheck):
         labels	=	[
                         "Table 1: Submission",
                         ["Party", "party_id"],
-                        ["Version", "version"],
+                        ["Version", "major_version", "minor_version"],
                         ["Reported year", "reported_year"],
                         ["Date of submission", "date_of_submission"],
                         ["Review status of the initial report", "consistency_status"],
@@ -248,22 +251,43 @@ class AEFSubmissionCheck(ColumnFieldsSheetCheck):
         super().__init__(worksheet, labels)
         return
 
+
     def load_to_db(self, cursor):
         """Load the data from the worksheet into the database using the provided cursor.
         """
         
         worksheet    = self.worksheet
         start_row, start_column, end_row, end_column	= self.get_field_dimensions()
+        start_column += 1	# inital column of values is one past the labels column
 
-        party_id    = worksheet.cell(start_row, start_column).value
-        version     = worksheet.cell(start_row + 1, start_column).value
-        reported_year	= worksheet.cell(start_row + 2, start_column).value
-        date_of_submission	= worksheet.cell(start_row + 3, start_column).value
-        consistency_status	= worksheet.cell(start_row + 4, start_column).value
-        NDC_period_start_year	= worksheet.cell(start_row + 5, start_column).value
-        NDC_period_end_year	= worksheet.cell(start_row + 6, start_column).value
+        party_id                = worksheet.cell(start_row, start_column).value
+        version                 = worksheet.cell(start_row + 1, start_column).value
+        reported_year	        = worksheet.cell(start_row + 2, start_column).value
+        date_of_submission	    = worksheet.cell(start_row + 3, start_column).value
+        consistency_status	    = worksheet.cell(start_row + 4, start_column).value
+        ndc_period_start_year	= worksheet.cell(start_row + 5, start_column).value
+        ndc_period_end_year	    = worksheet.cell(start_row + 6, start_column).value
+    
+        version_type    = type(version)
+        if (version_type == int):
+            major_version   = version
+            minor_version   = 0
+        elif (version_type == float):
+            str_version = "{:.1f}".format(version)
+            str_major_version, str_minor_version	= map(int, str_version.split('.'))
+            major_version	= int(str_major_version)
+            minor_version	= int(str_minor_version)
+        else:
+            str_version = str(version)
+            if '.' in str_version:
+                str_major_version, str_minor_version	= str_version.split('.')
+                major_version	= int(str_major_version)
+                minor_version	= int(str_minor_version)
+            else:
+                major_version	= int(str_version)
+                minor_version	= 0
 
-        cursor.execute("INSERT INTO Submissions (party_Id, version, reported_year, date_of_submission, consistency_status, NDC_period_start_year, NDC_period_end_year) VALUES (?, ?, ?, ?, ?, ?, ?)", (party_id, version, reported_year, date_of_submission, consistency_status, NDC_period_start_year, NDC_period_end_year))
+        cursor.execute("INSERT INTO Submissions (party_Id, major_version, minor_version, reported_year, date_of_submission, consistency_status, ndc_period_start_year, ndc_period_end_year) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (party_id, major_version, minor_version, reported_year, date_of_submission, consistency_status, ndc_period_start_year, ndc_period_end_year))
 
         cursor.connection.commit()
 
