@@ -9,8 +9,8 @@ import os, shutil
 # Load the openpyxl Excel library
 from openpyxl import load_workbook
 
-from AEFStructureCheck import AEFStructureCheck
-from AEFContentCheck import AEFContentCheck
+from aef_structure_check import AEFStructureCheck
+from aef_content_check import AEFContentCheck
 from syntaxreport.AEFBookReport import AEFBookReport
 
 

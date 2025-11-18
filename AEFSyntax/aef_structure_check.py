@@ -1,4 +1,4 @@
-# AEFStructureCheck.py
+# aef_structure_check.py
 
 # import AEFSummaryCheck
 # import AEFSubmissionCheck
@@ -7,7 +7,7 @@
 # import AEFHoldingsCheck
 # import AEFAuthEntitiesCheck
 
-import aefsheets
+import aef_sheets
 
 from syntaxreport.AEFSheetReport import AEFSheetReport
 
@@ -64,22 +64,22 @@ class AEFStructureCheck:
 
 	def check_sheets(self, workbook, worksheets, field_names, check_report):
 		is_valid	= True
-		summary_check	= aefsheets.AEFSummary()
+		summary_check	= aef_sheets.AEFSummary()
 		if (summary_check.check_structure(workbook, field_names, check_report)) is False:
 			is_valid	= False
-		submission_check	= aefsheets.AEFSubmission(worksheets[2], field_names[0])
+		submission_check	= aef_sheets.AEFSubmission(worksheets[2], field_names[0])
 		if (submission_check.check_structure(check_report)) is False:
 			is_valid	= False
-		authorizations_check	= aefsheets.AEFAuthorizations(worksheets[3], field_names[1])
+		authorizations_check	= aef_sheets.AEFAuthorizations(worksheets[3], field_names[1])
 		if (authorizations_check.check_structure(check_report)) is False:
 			is_valid	= False
-		actions_check	= aefsheets.AEFActions(worksheets[4], field_names[2])
+		actions_check	= aef_sheets.AEFActions(worksheets[4], field_names[2])
 		if (actions_check.check_structure(check_report)) is False:
 			is_valid	= False
-		holdings_check	= aefsheets.AEFHoldings(worksheets[5], field_names[3])
+		holdings_check	= aef_sheets.AEFHoldings(worksheets[5], field_names[3])
 		if (holdings_check.check_structure(check_report)) is False:
 			is_valid	= False
-		auth_entities_check	= aefsheets.AEFAuthEntities(worksheets[6], field_names[4])
+		auth_entities_check	= aef_sheets.AEFAuthEntities(worksheets[6], field_names[4])
 		if (auth_entities_check.check_structure(check_report)) is False:
 			is_valid	= False
 		return is_valid

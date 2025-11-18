@@ -1,4 +1,4 @@
-# aefsheets.py
+# aef_sheets.py
 
 from openpyxl.comments import Comment
 import re

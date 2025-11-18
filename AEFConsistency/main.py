@@ -8,10 +8,10 @@ import os, shutil
 
 # Load the openpyxl Excel library
 from openpyxl import load_workbook
+import sqlite3
+import aef_sheet_check
 
-from AEFStructureCheck import AEFStructureCheck
-from AEFContentCheck import AEFContentCheck
-from syntaxreport.AEFBookReport import AEFBookReport
+from AEFConsistency.create_db import create_tables
 
 
 # The directory containing AEF files to be checked
@@ -22,60 +22,59 @@ undetermined_dir	= aef_dir + "21.undetermined/"
 inconsistent_dir	= aef_dir + "10.inconsistent/"
 
 
-
 def main():
 	"""Check all .xlsx files in aef_dir/syntax_passed_dir for AEF consistency.
-	Files ending with '.consistency_checked.xlsx' are the output of this tool, and will be overwritten."""
+	Files ending with '.consistency_checked.xlsx' are the output of this tool, and if any exist, will be overwritten."""
 
-	files	= os.listdir(syntax_passed_dir)
+	conn0	= sqlite3.connect(":memory:")	#create an in-memory database to create tables
+	conn0.close()							# this dummy statement gets around pylance's inability to find the sqlite3 import
+	conn	= create_tables(":memory:")	#create an in-memory database for consistency checking
+	cursor	= conn.cursor()
+	load_submissions(syntax_passed_dir, cursor)	
+	check_submissions(cursor)
+
+
+def	load_submissions(str_path, cursor):
+	""""Load the file with pathname 'str_path' into the database.
+	The file has been syntax checked, so fields can be loaded into objects without checking.
+	The local name of the file is 'str_file'."""
+
+	files	= os.listdir(str_path)
 	for str_file in files:
 		if (str_file.endswith(".xlsx")):
 			if str_file.endswith(".consistency_checked.xlsx"):
 				continue
 			else:
-				str_head	= str_file[:-5]
-				dst_path	= aef_dir + str_head + ".consistency_checked.xlsx"
-				src_path	= aef_dir + str_file
-				shutil.copyfile(src_path, dst_path)
+				full_path	= str_path + str_file		# full pathname of source file
+				str_head	= str_file[:-5]				# filename without '.xlsx' suffix
 
-				print ("\nChecking '" + str_file + "'")
-				check_file(dst_path, str_file)
+				str_checked	= str_head + ".consistency_checked.xlsx"	# filename of destination file
+				dst_path	= str_path + str_checked					# full pathname of destination file
+				src_path	= str_path + str_file						# full pathname of source file
+				shutil.copyfile(src_path, dst_path)						# copy source to destination
 
+				print ("  Loading '" + str_file + "' into database...")
+				workbook	= load_workbook(dst_path, data_only=True)
+				submission_check	= aef_sheet_check.AEFSubmissionCheck(workbook)
+				submission_check.load_to_db(cursor)
 
-def	load_file(str_path, str_file):
-	""""Load the file with pathname 'str_path' into the database.
-	The file has been syntax checked, so fields can be loaded into objects without checking.
-	The local name of the file is 'str_file'."""
-
-	load_workbook	= load_workbook(str_path)
-	
+	return
 
 
+def check_submissions(cursor):
+	""""Check all submissions in the database for consistency.
+	Update the consistency_status field in the Submissions table."""
 
+	# Placeholder for consistency checking logic
+	# For each submission, perform checks and update the consistency_status accordingly
 
-
-
-
-def check_file(str_path, str_file):
-	""""Check the file with pathname 'str_path'.
-	The local name of the file is 'str_file'
-	First the structure of the workbook is checked,
-	next, the content of the fields in each sheet are checked."""
-
-	workbook		= load_workbook(str_path)
-	worksheets		= []
-	field_names		= []
-	check_report	= AEFBookReport(str_file)
-
-	structureCheck = AEFStructureCheck()
-	if structureCheck.check(workbook, worksheets, field_names, check_report) is False:
-		check_report.is_valid = False
-	else:
-		contentCheck 			= AEFContentCheck()
-		check_report.is_valid	= contentCheck.check(worksheets, field_names, check_report)
-	check_report.print(workbook)
-	
-	workbook.save(str_path)
+	# Example update (to be replaced with actual logic)
+	cursor.execute("""
+	UPDATE Submissions
+	SET consistency_status = 'Consistent'
+	WHERE consistency_status IS NULL;
+	""")
+	return
 
 
 if __name__ == "__main__":
