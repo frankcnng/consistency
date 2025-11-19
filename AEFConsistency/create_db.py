@@ -14,7 +14,7 @@ def create_tables(db_path):
     # Create tables
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Submissions (
-        party_Id                TEXT not null,
+        party_id                TEXT not null,
         reported_year           INTEGER not null,
         major_version           INTEGER not null,
         minor_version           INTEGER not null,
@@ -81,7 +81,7 @@ def create_tables(db_path):
         oimp_purpose                TEXT,
         use_cancelling_party_id     TEXT,
         use_cancelling_entity_id    TEXT,
-        year_used_for_NDC           INTEGER,
+        year_used_for_ndc           INTEGER,
         consistency_results         TEXT,
         additional_info             TEXT,
         reporting_party_Id          TEXT not null,

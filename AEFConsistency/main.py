@@ -26,23 +26,49 @@ def main():
 	"""Check all .xlsx files in aef_dir/syntax_passed_dir for AEF consistency.
 	Files ending with '.consistency_checked.xlsx' are the output of this tool, and if any exist, will be overwritten."""
 
-#	conn0	= sqlite3.connect(":memory:")	#create an in-memory database to create tables
-#	conn0.close()							# this dummy statement gets around pylance's inability to find the sqlite3 import
 	conn	= create_tables(":memory:")	#create an in-memory database for consistency checking
 	cursor	= conn.cursor()
-	load_new_submissions(syntax_passed_dir, cursor)	
+	load_submissions(syntax_passed_dir, cursor)
+	print_tables(cursor)
 #	check_submissions(cursor)
 
 
-def	load_new_submissions(str_path, cursor):
-	""""Load the new submission files in pathname 'str_path' into the database.
+def print_table(cursor, table_name):
+	"""Print the contents of the specified table using the provided cursor.
+	"""
+	print(f'\n{table_name}:\n')
+	cursor.execute(f'SELECT * FROM {table_name}')
+	rows	= cursor.fetchall()
+	for row in rows:    
+		print(row)
+	print("\n")
+	return
+
+
+def print_tables(cursor):
+	"""Print the contents of all tables in the database using the provided cursor.
+	"""
+	tables	=	[
+					"Submissions",
+					"Authorizations",
+					"Actions",
+					"Holdings",
+					"Authorized_Entities"
+				]
+	for table in tables:
+		print_table(cursor, table)
+	return
+
+
+def	load_submissions(str_path, cursor):
+	""""Load AEF submission files in pathname 'str_path' into the database.
 	The files have been syntax checked, so fields can be loaded into objects without checking.
 	"""
 
 	files	= os.listdir(str_path)
 	for str_file in files:
 		if (str_file.endswith(".xlsx")):
-			if str_file.endswith(".consistency_checked.xlsx"):
+			if str_file.endswith(".consistency_checked.xlsx"):	# ignore these files, they will be overwritten
 				continue
 			else:
 				full_path	= str_path + str_file		# full pathname of source file
@@ -53,20 +79,28 @@ def	load_new_submissions(str_path, cursor):
 				src_path	= str_path + str_file						# full pathname of source file
 				shutil.copyfile(src_path, dst_path)						# copy source to destination
 
-				print ("  Loading '" + str_file + "' into database...")
+				print ("Loading '" + str_file + "' into database...")
 				workbook	= load_workbook(dst_path, data_only=True)
 				load_workbook2db(workbook, cursor)
 	return
 
+
 def	load_workbook2db(workbook, cursor):
-	""""Load the workbook into the database.
+	""""Load all data sheets of workbook into the database.
 	The workbook has been syntax checked, so fields can be loaded into objects without checking."""
 
 	submission_check	= aef_sheet_check.AEFSubmissionCheck(workbook)
 	submission_check.load_to_db(cursor)
-	authorizations_check	= aef_sheet_check.AEFAuthorizationsCheck(workbook)
-	authorizations_check.load_to_db(cursor)
+	submission_key		= submission_check.primary_key	# the submission primary key is used as the foreign key from other tables
 
+	authorizations_check	= aef_sheet_check.AEFAuthorizationsCheck(workbook)
+	authorizations_check.load_to_db(cursor, submission_key)
+	actions_check			= aef_sheet_check.AEFActionsCheck(workbook)
+	actions_check.load_to_db(cursor, submission_key)
+	holdings_check			= aef_sheet_check.AEFHoldings(workbook)
+	holdings_check.load_to_db(cursor, submission_key)
+	auth_entities_check		= aef_sheet_check.AEFAuthEntitiesCheck(workbook)
+	auth_entities_check.load_to_db(cursor, submission_key)	
 	return
 
 
