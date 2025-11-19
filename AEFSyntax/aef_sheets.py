@@ -100,12 +100,12 @@ class RowFieldsSheet(AEFSheet):
 		worksheet			= self.worksheet
 		sheet_report	= AEFSheetReport(self.template_sheet_name, 3)
 		book_report.add_sheet_report(sheet_report)
-		for column in worksheet.iter_rows(min_row=worksheet.min_row, max_row=worksheet.max_row, min_col=worksheet.min_column, max_col=worksheet.max_column):
+		for row in worksheet.iter_rows(min_row=worksheet.min_row, max_row=worksheet.max_row, min_col=worksheet.min_column, max_col=worksheet.max_column):
 			if (field_headings_row > 0):
 				break
 			else:
 				n_blank_cells	= 0
-			for cell in column:
+			for cell in row:
 				if ((cell.data_type == "s") and (cell.value.casefold() == template_fields[0].casefold())):
 					heading_column	= cell.column
 					continue
@@ -128,8 +128,8 @@ class RowFieldsSheet(AEFSheet):
 			return False
 
 		dest_fields	= []
-		for column in worksheet.iter_rows(min_col=fields_start_column, max_col=fields_end_column, min_row=field_headings_row, max_row=field_headings_row, values_only=True):
-			dest_fields.append(column)
+		for row in worksheet.iter_rows(min_col=fields_start_column, max_col=fields_end_column, min_row=field_headings_row, max_row=field_headings_row, values_only=True):
+			dest_fields.append(row)
 
 		is_valid	= True
 		for x_field in range (1, n_template_fields):
@@ -153,8 +153,8 @@ class RowFieldsSheet(AEFSheet):
 		template_fields		= self.field_names
 		n_template_fields	= len(template_fields)
 		worksheet			= self.worksheet
-		for column in worksheet.iter_rows(min_row=worksheet.min_row, max_row=worksheet.max_row, min_col=worksheet.min_column, max_col=worksheet.max_column):
-			for cell in column:
+		for row in worksheet.iter_rows(min_row=worksheet.min_row, max_row=worksheet.max_row, min_col=worksheet.min_column, max_col=worksheet.max_column):
+			for cell in row:
 				if ((cell.data_type == "s") and (cell.value.casefold() == template_fields[1].casefold())):
 					fields_start_column	= cell.column
 					fields_row			= cell.row
@@ -335,8 +335,8 @@ class ColumnFieldsSheet(AEFSheet):
 			str_subheading	+= ": " + template_fields[0]
 		sheet_report		= AEFSheetReport(str_subheading, 3)
 		book_report.add_sheet_report(sheet_report)
-		for row in worksheet.iter_cols(min_row=worksheet.min_row, max_row=worksheet.max_row, min_col=worksheet.min_column, max_col=worksheet.max_column):
-			for cell in row:
+		for column in worksheet.iter_cols(min_row=worksheet.min_row, max_row=worksheet.max_row, min_col=worksheet.min_column, max_col=worksheet.max_column):
+			for cell in column:
 				if ((cell.data_type == "s") and (cell.value.casefold() == template_fields[0].casefold())):
 					heading_row	= cell.row
 					fields_column	= cell.column
@@ -351,8 +351,8 @@ class ColumnFieldsSheet(AEFSheet):
 			return False
 
 		dest_fields	= []
-		for row in worksheet.iter_cols(min_col=fields_column, max_col=fields_column, min_row=fields_start_row, max_row=fields_end_row, values_only=True):
-			dest_fields.append(row)
+		for column in worksheet.iter_cols(min_col=fields_column, max_col=fields_column, min_row=fields_start_row, max_row=fields_end_row, values_only=True):
+			dest_fields.append(column)
 
 		for x_field in range (1, n_template_fields):
 			if (template_fields[x_field] in dest_fields[0]) is False:
@@ -507,8 +507,8 @@ class AEFSubmission(ColumnFieldsSheet):
 		template_fields		= self.field_names
 		n_template_fields	= len(template_fields)
 		worksheet			= self.worksheet
-		for row in worksheet.iter_cols(min_row=worksheet.min_row, max_row=worksheet.max_row, min_col=worksheet.min_column, max_col=worksheet.max_column):
-			for cell in row:
+		for column in worksheet.iter_cols(min_row=worksheet.min_row, max_row=worksheet.max_row, min_col=worksheet.min_column, max_col=worksheet.max_column):
+			for cell in column:
 				if ((cell.data_type == "s") and (cell.value.casefold() == template_fields[1].casefold())):
 					fields_start_row	= cell.row
 					fields_column		= cell.column

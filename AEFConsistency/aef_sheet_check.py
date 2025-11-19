@@ -24,6 +24,41 @@ class RowFieldsSheetCheck(AEFSheetCheck):
     """Abstract superclass for checks consistency of worksheets with fields organised in rows."""
 
 
+    def get_field_dimensions(self):
+        """Get the dimensions of the fields in the worksheet.
+        """
+
+        labels		    = self.labels
+        nFields	        = len(labels)
+        worksheet	    = self.worksheet
+        str_heading     = labels[0].casefold()
+        str_first_field = labels[1][0].casefold()
+        str_last_field  = labels[nFields - 1][0].casefold()
+        heading_row		= start_row     = end_row   = 0
+        start_column    = end_column    = 0
+        for row in worksheet.iter_rows(min_row=worksheet.min_row, max_row=worksheet.max_row, min_col=worksheet.min_column, max_col=worksheet.max_column):
+            is_blank_row    = True
+            for cell in row:
+                if (cell.value != None):
+                    is_blank_row    = False
+                if (cell.data_type == "s"):
+                    if ((cell.value.casefold() == str_heading)):                                # looking for the heading row
+                        heading_row     = cell.row
+                        start_column    = cell.column
+                        continue
+                    elif ((heading_row > 0) and (cell.value.casefold() == str_first_field)):    # looking for the first field label
+                        start_row       = cell.row
+                        start_column    = cell.column
+                        continue
+                    elif ((start_row > 0) and (cell.value.casefold() == str_last_field)):       # looking for the last field label
+                        end_column	= cell.column
+                        break
+            if ((end_column > 0) and (is_blank_row)):
+                end_row    = cell.row - 1
+                break
+        return (start_row, start_column, end_row, end_column)
+
+
 class AEFAuthorizationsCheck(RowFieldsSheetCheck):
     """Concrete subclass to check AEF Authorizations worksheet."""
     def __init__(self, workbook):
@@ -60,7 +95,28 @@ class AEFAuthorizationsCheck(RowFieldsSheetCheck):
         
         worksheet    = self.worksheet
         start_row, start_column, end_row, end_column	= self.get_field_dimensions()
-        start_column += 1	# inital column of values is one past the labels column
+        start_row += 1	# inital row of values is one past the labels row
+
+        for row in worksheet.iter_cols(min_row=worksheet.min_row, max_row=worksheet.max_row, min_col=worksheet.min_column, max_col=worksheet.max_column):
+            for cell in row:
+                if (cell.data_type == "s"):
+                    if ((cell.value.casefold() == str_heading)):  # looking for the heading row
+                        heading_row     = cell.row
+                        start_column	= cell.column
+                        end_column      = cell.column
+                        continue
+                    elif ((heading_row > 0) and (cell.value.casefold() == str_first_field)):    # looking for the first field label
+                        start_row	= cell.row
+                        continue
+                    elif ((start_row > 0) and (cell.value.casefold() == str_last_field)):       # looking for the last field label
+                        end_row	= cell.row
+                        break
+
+
+
+
+
+
 
         party_id                = worksheet.cell(start_row, start_column).value
         version                 = worksheet.cell(start_row + 1, start_column).value
@@ -199,6 +255,7 @@ class ColumnFieldsSheetCheck(AEFSheetCheck):
     """Abstract superclass for checking worksheets with fields organised in columns.
     """
 
+
     def get_field_dimensions(self):
         """Get the dimensions of the fields in the worksheet.
         """
@@ -209,28 +266,25 @@ class ColumnFieldsSheetCheck(AEFSheetCheck):
         str_heading     = labels[0].casefold()
         str_first_field = labels[1][0].casefold()
         str_last_field  = labels[nFields - 1][0].casefold()
-        heading_row		= 0
-        start_row	    = 0
-        end_row		    = 0
-        start_column	= 0
-        end_column		= 0
-        for row in worksheet.iter_cols(min_row=worksheet.min_row, max_row=worksheet.max_row, min_col=worksheet.min_column, max_col=worksheet.max_column):
-            for cell in row:
+        heading_row		= start_row     = end_row   = 0
+        start_column    = end_column    = 0
+        for column in worksheet.iter_cols(min_row=worksheet.min_row, max_row=worksheet.max_row, min_col=worksheet.min_column, max_col=worksheet.max_column):
+            for cell in column:
                 if (cell.data_type == "s"):
                     if ((cell.value.casefold() == str_heading)):  # looking for the heading row
-                        heading_row     = cell.row
-                        start_column	= cell.column
-                        end_column      = cell.column
+                        heading_row     = start_row     = end_row   = cell.row
+                        start_column    = end_column                = cell.column
                         continue
                     elif ((heading_row > 0) and (cell.value.casefold() == str_first_field)):    # looking for the first field label
-                        start_row	= cell.row
+                        start_row       = end_row       = cell.row
+                        start_column    = end_column    = cell.column
                         continue
                     elif ((start_row > 0) and (cell.value.casefold() == str_last_field)):       # looking for the last field label
-                        end_row	= cell.row
+                        end_row	    = cell.row
+                        end_column	= cell.column
                         break
         return (start_row, start_column, end_row, end_column)
     
-
 
 class AEFSubmissionCheck(ColumnFieldsSheetCheck):
     """Concrete subclass for AEF Submission worksheet.
@@ -243,7 +297,8 @@ class AEFSubmissionCheck(ColumnFieldsSheetCheck):
                         ["Version", "major_version", "minor_version"],
                         ["Reported year", "reported_year"],
                         ["Date of submission", "date_of_submission"],
-                        ["Review status of the initial report", "consistency_status"],
+                        ["Review status of the initial report", "review_status"],
+                        ["Result of the consistency check of this AEF submission", "consistency_status"],
                         ["First year of the NDC implementation period", "NDC_period_start_year"],
                         ["Last year of the NDC implementation period", "NDC_period_end_year"],
                         ["Reference to the Article 6 technical expert review report of the initial report", ""]
@@ -264,9 +319,10 @@ class AEFSubmissionCheck(ColumnFieldsSheetCheck):
         version                 = worksheet.cell(start_row + 1, start_column).value
         reported_year	        = worksheet.cell(start_row + 2, start_column).value
         date_of_submission	    = worksheet.cell(start_row + 3, start_column).value
-        consistency_status	    = worksheet.cell(start_row + 4, start_column).value
-        ndc_period_start_year	= worksheet.cell(start_row + 5, start_column).value
-        ndc_period_end_year	    = worksheet.cell(start_row + 6, start_column).value
+        review_status           = worksheet.cell(start_row + 4, start_column).value
+        consistency_status	    = worksheet.cell(start_row + 5, start_column).value
+        ndc_period_start_year	= worksheet.cell(start_row + 6, start_column).value
+        ndc_period_end_year	    = worksheet.cell(start_row + 7, start_column).value
     
         version_type    = type(version)
         if (version_type == int):
@@ -287,7 +343,7 @@ class AEFSubmissionCheck(ColumnFieldsSheetCheck):
                 major_version	= int(str_version)
                 minor_version	= 0
 
-        cursor.execute("INSERT INTO Submissions (party_Id, major_version, minor_version, reported_year, date_of_submission, consistency_status, ndc_period_start_year, ndc_period_end_year) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (party_id, major_version, minor_version, reported_year, date_of_submission, consistency_status, ndc_period_start_year, ndc_period_end_year))
+        cursor.execute("INSERT INTO Submissions (party_Id, major_version, minor_version, reported_year, date_of_submission, review_status, consistency_status, ndc_period_start_year, ndc_period_end_year) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (party_id, major_version, minor_version, reported_year, date_of_submission, review_status, consistency_status, ndc_period_start_year, ndc_period_end_year))
 
         cursor.connection.commit()
 

@@ -55,10 +55,10 @@ def	load_new_submissions(str_path, cursor):
 
 				print ("  Loading '" + str_file + "' into database...")
 				workbook	= load_workbook(dst_path, data_only=True)
-				load_workbook(workbook, cursor)
+				load_workbook2db(workbook, cursor)
 	return
 
-def	load_workbook(workbook, cursor):
+def	load_workbook2db(workbook, cursor):
 	""""Load the workbook into the database.
 	The workbook has been syntax checked, so fields can be loaded into objects without checking."""
 

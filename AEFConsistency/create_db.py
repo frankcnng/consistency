@@ -19,6 +19,7 @@ def create_tables(db_path):
         major_version           INTEGER not null,
         minor_version           INTEGER not null,
         date_of_submission      TEXT not null,
+        review_status           TEXT,
         consistency_status      TEXT,
         ndc_period_start_year   INTEGER,
         ndc_period_end_year     INTEGER,
