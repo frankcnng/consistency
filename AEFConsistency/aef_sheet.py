@@ -1,18 +1,17 @@
-# aef_sheet_check.py
+# aef_sheet.py
 
-import sqlite3
-import re
 from openpyxl import load_workbook
-
-
 
 from openpyxl.comments import Comment
 import re
 import sqlite3
 
 
-class AEFSheetCheck:
-    """Abstract superclass that checks the consistency of a worksheet."""
+class AEFSheet:
+    """Abstract superclass for an AEF worksheet within an AEF workbook.
+    Did not make this a subclass of openpyxl.worksheet.Worksheet as they would require changing
+    openpyxl code to modify how the sheets are created under openpyxl.workbook.Workbook.
+    """
 
     def __init__(self, worksheet, labels):
         self.worksheet	= worksheet
@@ -20,8 +19,8 @@ class AEFSheetCheck:
         return
 
 
-class RowFieldsSheetCheck(AEFSheetCheck):
-    """Abstract superclass for checks consistency of worksheets with fields organised in rows."""
+class AEFRowFieldsSheet(AEFSheet):
+    """Abstract superclass for AEF worksheets with fields organised in rows."""
 
 
     def get_field_dimensions(self):
@@ -97,8 +96,8 @@ class RowFieldsSheetCheck(AEFSheetCheck):
         return
 
 
-class AEFAuthorizationsCheck(RowFieldsSheetCheck):
-    """Concrete subclass to check AEF Authorizations worksheet.
+class AEFAuthorizationsSheet(AEFRowFieldsSheet):
+    """Concrete subclass for AEF Authorizations worksheet.
     """
 
     def __init__(self, workbook):
@@ -129,8 +128,8 @@ class AEFAuthorizationsCheck(RowFieldsSheetCheck):
         return
 
 
-class AEFActionsCheck(RowFieldsSheetCheck):
-    """Concrete subclass to check AEF Actions worksheet.
+class AEFActionsSheet(AEFRowFieldsSheet):
+    """Concrete subclass for AEF Actions worksheet.
     """
 
     def __init__(self, workbook):
@@ -175,7 +174,7 @@ class AEFActionsCheck(RowFieldsSheetCheck):
         return
 
 
-class AEFHoldings(RowFieldsSheetCheck):
+class AEFHoldingsSheet(AEFRowFieldsSheet):
     """Concrete subclass for AEF Holdings worksheet.
     """
 
@@ -207,7 +206,7 @@ class AEFHoldings(RowFieldsSheetCheck):
         return
 
 
-class AEFAuthEntitiesCheck(RowFieldsSheetCheck):
+class AEFAuthEntitiesSheet(AEFRowFieldsSheet):
     """Concrete subclass for AEF Authorized Entities worksheet.
     """
 
@@ -228,8 +227,8 @@ class AEFAuthEntitiesCheck(RowFieldsSheetCheck):
         return
 
 
-class ColumnFieldsSheetCheck(AEFSheetCheck):
-    """Abstract superclass for checking worksheets with fields organised in columns.
+class AEFColumnFieldsSheet(AEFSheet):
+    """Abstract superclass for AEF worksheets with fields organised in columns.
     """
 
     def get_field_dimensions(self):
@@ -262,7 +261,7 @@ class ColumnFieldsSheetCheck(AEFSheetCheck):
         return (start_row, start_column, end_row, end_column)
     
 
-class AEFSubmissionCheck(ColumnFieldsSheetCheck):
+class AEFSubmissionSheet(AEFColumnFieldsSheet):
     """Concrete subclass for AEF Submission worksheet.
     """
     def __init__(self, workbook):

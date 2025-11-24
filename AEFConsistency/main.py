@@ -10,7 +10,7 @@ import os, shutil
 from openpyxl import load_workbook
 import sqlite3
 
-import aef_sheet_check
+import aef_sheet
 from create_db import create_tables
 
 
@@ -81,26 +81,26 @@ def	load_submissions(str_path, cursor):
 
 				print ("Loading '" + str_file + "' into database...")
 				workbook	= load_workbook(dst_path, data_only=True)
-				load_workbook2db(workbook, cursor)
+				load_workbook_to_db(workbook, cursor)
 	return
 
 
-def	load_workbook2db(workbook, cursor):
+def	load_workbook_to_db(workbook, cursor):
 	""""Load all data sheets of workbook into the database.
 	The workbook has been syntax checked, so fields can be loaded into objects without checking."""
 
-	submission_check	= aef_sheet_check.AEFSubmissionCheck(workbook)
-	submission_check.load_to_db(cursor)
-	submission_key		= submission_check.primary_key	# the submission primary key is used as the foreign key from other tables
+	submission_sheet	= aef_sheet.AEFSubmissionSheet(workbook)
+	submission_sheet.load_to_db(cursor)
+	submission_key		= submission_sheet.primary_key	# the submission primary key is used as the foreign key from other tables
 
-	authorizations_check	= aef_sheet_check.AEFAuthorizationsCheck(workbook)
-	authorizations_check.load_to_db(cursor, submission_key)
-	actions_check			= aef_sheet_check.AEFActionsCheck(workbook)
-	actions_check.load_to_db(cursor, submission_key)
-	holdings_check			= aef_sheet_check.AEFHoldings(workbook)
-	holdings_check.load_to_db(cursor, submission_key)
-	auth_entities_check		= aef_sheet_check.AEFAuthEntitiesCheck(workbook)
-	auth_entities_check.load_to_db(cursor, submission_key)	
+	authorizations_sheet	= aef_sheet.AEFAuthorizationsSheet(workbook)
+	authorizations_sheet.load_to_db(cursor, submission_key)
+	actions_sheet			= aef_sheet.AEFActionsSheet(workbook)
+	actions_sheet.load_to_db(cursor, submission_key)
+	holdings_sheet			= aef_sheet.AEFHoldingsSheet(workbook)
+	holdings_sheet.load_to_db(cursor, submission_key)
+	auth_entities_sheet		= aef_sheet.AEFAuthEntitiesSheet(workbook)
+	auth_entities_sheet.load_to_db(cursor, submission_key)	
 	return
 
 
