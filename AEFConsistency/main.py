@@ -19,7 +19,7 @@ aef_dir				= "/Users/frankng/United Nations Framework Convention on Climate Chan
 syntax_passed_dir	= aef_dir + "10.syntax.passed/"
 consistent_dir		= aef_dir + "20.consistent/"
 undetermined_dir	= aef_dir + "21.undetermined/"
-inconsistent_dir	= aef_dir + "10.inconsistent/"
+inconsistent_dir	= aef_dir + "22.inconsistent/"
 
 
 def main():
@@ -29,6 +29,9 @@ def main():
 	conn	= create_tables(":memory:")	#create an in-memory database for consistency checking
 	cursor	= conn.cursor()
 	load_submissions(syntax_passed_dir, cursor)
+	load_submissions(consistent_dir, cursor)
+	load_submissions(undetermined_dir, cursor)
+#	load_submissions(inconsistent_dir, cursor)
 	print_tables(cursor)
 #	check_submissions(cursor)
 
@@ -81,26 +84,26 @@ def	load_submissions(str_path, cursor):
 
 				print ("Loading '" + str_file + "' into database...")
 				workbook	= load_workbook(dst_path, data_only=True)
-				load_workbook_to_db(workbook, cursor)
+				write_workbook_to_db(workbook, cursor)
 	return
 
 
-def	load_workbook_to_db(workbook, cursor):
+def	write_workbook_to_db(workbook, cursor):
 	""""Load all data sheets of workbook into the database.
 	The workbook has been syntax checked, so fields can be loaded into objects without checking."""
 
 	submission_sheet	= aef_sheet.AEFSubmissionSheet(workbook)
-	submission_sheet.load_to_db(cursor)
+	submission_sheet.write_to_db(cursor)
 	submission_key		= submission_sheet.primary_key	# the submission primary key is used as the foreign key from other tables
 
 	authorizations_sheet	= aef_sheet.AEFAuthorizationsSheet(workbook)
-	authorizations_sheet.load_to_db(cursor, submission_key)
+	authorizations_sheet.write_to_db(cursor, submission_key)
 	actions_sheet			= aef_sheet.AEFActionsSheet(workbook)
-	actions_sheet.load_to_db(cursor, submission_key)
+	actions_sheet.write_to_db(cursor, submission_key)
 	holdings_sheet			= aef_sheet.AEFHoldingsSheet(workbook)
-	holdings_sheet.load_to_db(cursor, submission_key)
+	holdings_sheet.write_to_db(cursor, submission_key)
 	auth_entities_sheet		= aef_sheet.AEFAuthEntitiesSheet(workbook)
-	auth_entities_sheet.load_to_db(cursor, submission_key)	
+	auth_entities_sheet.write_to_db(cursor, submission_key)	
 	return
 
 

@@ -59,8 +59,8 @@ class AEFRowFieldsSheet(AEFSheet):
         return (start_row, start_column, end_row, end_column)
 
 
-    def load_to_db(self, cursor, submission_key):
-        """Load the data from the worksheet into the database using the provided cursor.
+    def write_to_db(self, cursor, submission_key):
+        """write the data from the worksheet to the database using the provided cursor.
         """
         worksheet   = self.worksheet
         labels      = self.labels
@@ -288,8 +288,8 @@ class AEFSubmissionSheet(AEFColumnFieldsSheet):
         return
 
 
-    def load_to_db(self, cursor):
-        """Load the data from the worksheet into the database using the provided cursor.
+    def write_to_db(self, cursor):
+        """Write the data from the worksheet to the database using the provided cursor.
         """
         table_name  = self.labels[0][1]  # e.g., "Submissions"
         worksheet   = self.worksheet

@@ -17,7 +17,7 @@ from syntaxreport.AEFBookReport import AEFBookReport
 # The directory containing AEF files to be checked
 aef_dir			= "/Users/frankng/United Nations Framework Convention on Climate Change/Mitigation - Article 6.2/03_CARP/consistency/AEF_files/"
 unprocessed_dir	= aef_dir + "00.unprocessed/"
-processed_dir	= aef_dir + "99.processed/"
+archive_dir		= aef_dir + "99.archive/"
 passed_dir		= aef_dir + "10.syntax.passed/"
 failed_dir		= aef_dir + "11.syntax.failed/"
 #aef_dir		= "../AEF_files.00.unchecked/"
@@ -44,7 +44,7 @@ def main():
 					shutil.move(dst_path, passed_dir + str_checked)
 				else:
 					shutil.move(dst_path, failed_dir + str_checked)
-				shutil.move(src_path, processed_dir + str_file)
+				shutil.move(src_path, archive_dir + str_file)
 
 
 def check_file(str_path, str_file):
