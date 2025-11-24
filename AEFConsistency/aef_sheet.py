@@ -104,10 +104,10 @@ class AEFAuthorizationsSheet(AEFRowFieldsSheet):
         worksheet   = workbook["Table 2 Authorizations"]
         labels	    =	[
                             ["Table 2: Authorizations", "Authorizations"],
-                            ["Authorization ID", "auth_id"],
-                            ["Date of authorization", "date"],
+                            ["Authorization ID", "authorization_id"],
+                            ["Date of authorization", "date_of_authorization"],
                             ["Cooperative approach ID", "cooperative_approach_id"],
-                            ["Version of the authorization", "version"],
+                            ["Version of the authorization", "version_of_authorization"],
                             ["", ""],
                             ["Authorized quantity", "authorised_quantity"],
                             ["Metric", "metric"],
@@ -323,6 +323,9 @@ class AEFSubmissionSheet(AEFColumnFieldsSheet):
             else:
                 major_version	= int(str_version)
                 minor_version	= 0
+
+        if ((consistency_status == "{Information in this field is populated by the CARP}") or (consistency_status == "")) :
+            consistency_status    = None
 
         cursor.execute("INSERT INTO Submissions (party_id, major_version, minor_version, reported_year, date_of_submission, review_status, consistency_status, ndc_period_start_year, ndc_period_end_year) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (party_id, major_version, minor_version, reported_year, date_of_submission, review_status, consistency_status, ndc_period_start_year, ndc_period_end_year))
         cursor.connection.commit()

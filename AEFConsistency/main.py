@@ -11,6 +11,7 @@ from openpyxl import load_workbook
 import sqlite3
 
 import aef_sheet
+import aef_submission
 from create_db import create_tables
 
 
@@ -33,7 +34,7 @@ def main():
 	load_submissions(undetermined_dir, cursor)
 #	load_submissions(inconsistent_dir, cursor)
 	print_tables(cursor)
-#	check_submissions(cursor)
+	check_new_submissions(cursor)
 
 
 def print_table(cursor, table_name):
@@ -67,7 +68,6 @@ def	load_submissions(str_path, cursor):
 	""""Load AEF submission files in pathname 'str_path' into the database.
 	The files have been syntax checked, so fields can be loaded into objects without checking.
 	"""
-
 	files	= os.listdir(str_path)
 	for str_file in files:
 		if (str_file.endswith(".xlsx")):
@@ -90,7 +90,8 @@ def	load_submissions(str_path, cursor):
 
 def	write_workbook_to_db(workbook, cursor):
 	""""Load all data sheets of workbook into the database.
-	The workbook has been syntax checked, so fields can be loaded into objects without checking."""
+	The workbook has been syntax checked, so fields can be loaded into objects without checking.
+	"""
 
 	submission_sheet	= aef_sheet.AEFSubmissionSheet(workbook)
 	submission_sheet.write_to_db(cursor)
@@ -107,20 +108,29 @@ def	write_workbook_to_db(workbook, cursor):
 	return
 
 
-def check_submissions(cursor):
-	""""Check all submissions in the database for consistency.
-	Update the consistency_status field in the Submissions table."""
+def check_new_submissions(cursor):
+	""""Check new submissions in the database for consistency.
+	New submissions are those with consistency_status IS NULL.
+	"""
+	cursor.execute(f'SELECT * FROM Submissions WHERE consistency_status IS NULL')	# Load new submissions from db
+	submission_rows	= cursor.fetchall()
+	submissions	= []
+	for submission_row in submission_rows:
+		submission = aef_submission.AEFSubmission(cursor, submission_row)
+		submission.check_consistency(cursor)
+	return
+
 
 	# Placeholder for consistency checking logic
 	# For each submission, perform checks and update the consistency_status accordingly
 
 	# Example update (to be replaced with actual logic)
-	cursor.execute("""
-	UPDATE Submissions
-	SET consistency_status = 'Consistent'
-	WHERE consistency_status IS NULL;
-	""")
-	return
+	#cursor.execute("""
+	#UPDATE Submissions
+	#SET consistency_status = 'Consistent'
+	#WHERE consistency_status IS NULL;
+	#""")
+
 
 
 if __name__ == "__main__":

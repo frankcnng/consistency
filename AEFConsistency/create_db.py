@@ -18,7 +18,7 @@ def create_tables(db_path):
         reported_year           INTEGER not null,
         major_version           INTEGER not null,
         minor_version           INTEGER not null,
-        date_of_submission      TEXT not null,
+        date_of_submission      REAL not null,
         review_status           TEXT,
         consistency_status      TEXT,
         ndc_period_start_year   INTEGER,
@@ -28,9 +28,9 @@ def create_tables(db_path):
     """)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Authorizations (
-        auth_id                     TEXT not null,
-        date                        REAL not null,
-        version                     INTEGER not null,
+        authorization_id            TEXT not null,
+        date_of_authorization       REAL not null,
+        version_of_authorization    INTEGER not null,
         cooperative_approach_id     TEXT,
         authorised_quantity         INTEGER,
         metric                      TEXT,
@@ -50,7 +50,7 @@ def create_tables(db_path):
         reported_year               INTEGER not null,
         major_version               INTEGER not null,
         minor_version               INTEGER not null,
-        PRIMARY KEY (auth_id, date, version),
+        PRIMARY KEY (authorization_id, date_of_authorization, version_of_authorization),
         FOREIGN KEY (reporting_party_Id, reported_year, major_version, minor_version)
             REFERENCES Submissions(party_Id, reported_year, major_version, minor_version)
     );
