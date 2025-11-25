@@ -6,8 +6,8 @@ from openpyxl import load_workbook
 
 
 def create_tables(db_path):
-    """Create the AEF consistency database at 'db_path'."""
-
+    """ Create the AEF consistency database at 'db_path'.
+    """
     conn	= sqlite3.connect(db_path)
     cursor	= conn.cursor()
 
@@ -141,3 +141,20 @@ def create_tables(db_path):
     """)
     conn.commit()
     return conn
+
+
+def create_cooperative_approaches(cursor):
+    """ Create and populate the cooperative approach table from the other tables.
+        This is for efficiency.
+    """
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS Cooperative_Approaches (
+        cooperative_approach_id     TEXT not null,
+        authorizing_party_id        TEXT,
+        participating_party_ids     TEXT,
+        authorized_entities         TEXT,
+        authorization_id            TEXT
+        PRIMARY KEY (cooperative_approach_id)
+    );
+    """)
+    return

@@ -265,3 +265,5 @@ class AEFAuthorizedEntity:
         """, (self.entity_id, self.name, self.reporting_party_id, self.reported_year, self.major_version, self.minor_version))
         return
     
+class CooperativeApproach:
+    pass

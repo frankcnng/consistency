@@ -89,10 +89,9 @@ def	load_submissions(str_path, cursor):
 
 
 def	write_workbook_to_db(workbook, cursor):
-	""""Load all data sheets of workbook into the database.
-	The workbook has been syntax checked, so fields can be loaded into objects without checking.
+	"""	Write all data sheets of workbook into the database.
+		The workbook has been syntax checked, so fields can be loaded into objects without checking.
 	"""
-
 	submission_sheet	= aef_sheet.AEFSubmissionSheet(workbook)
 	submission_sheet.write_to_db(cursor)
 	submission_key		= submission_sheet.primary_key	# the submission primary key is used as the foreign key from other tables
@@ -119,17 +118,6 @@ def check_new_submissions(cursor):
 		submission = aef_submission.AEFSubmission(cursor, submission_row)
 		submission.check_consistency(cursor)
 	return
-
-
-	# Placeholder for consistency checking logic
-	# For each submission, perform checks and update the consistency_status accordingly
-
-	# Example update (to be replaced with actual logic)
-	#cursor.execute("""
-	#UPDATE Submissions
-	#SET consistency_status = 'Consistent'
-	#WHERE consistency_status IS NULL;
-	#""")
 
 
 
