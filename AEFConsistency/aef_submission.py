@@ -10,7 +10,10 @@ import sqlite3
 
 import datetime
 
+#from aef_consistency_check import *
+
 from aef_consistency_check.II01_PartyCAParticipation import II01_PartyCAParticipation
+from aef_consistency_check.II02_ActionReportedOnce import II02_ActionReportedOnce
 
 
 class AEFSubmission:
@@ -108,6 +111,7 @@ class AEFSubmission:
         # Placeholder for consistency check logic
 
         check   = II01_PartyCAParticipation(self, cursor)
+        check   = II02_ActionReportedOnce(self, cursor)
         check.run()
 
         return
