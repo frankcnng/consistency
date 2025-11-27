@@ -4,7 +4,7 @@ import sqlite3
 
 import aef_submission
 
-from aef_consistency_check.AEFConsistencyCheck import AEFConsistencyCheck
+from aef_consistency_check.AEFConsistencyCheck import *
 
 
 class II07_CooperativeApproach(AEFConsistencyCheck):
