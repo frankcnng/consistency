@@ -88,11 +88,14 @@ def create_tables(db_path):
         reported_year               INTEGER not null,
         major_version               INTEGER not null,
         minor_version               INTEGER not null,
-        PRIMARY KEY (action_date, action_type, party_itmo_registry_id, first_id, last_id),
         FOREIGN KEY (reporting_party_Id, reported_year, major_version, minor_version)
             REFERENCES Submissions(party_Id, reported_year, major_version, minor_version)
     );
     """)
+#  Would have liked to add primary key to Actions:
+#  PRIMARY KEY (action_date, action_type, party_itmo_registry_id, first_id, last_id),
+#  but, cannot create a sensible primary key on actions without a timestamp, not a datestamp
+
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Holdings (
         cooperative_approach_id     TEXT,

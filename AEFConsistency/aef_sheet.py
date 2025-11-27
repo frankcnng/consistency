@@ -53,9 +53,11 @@ class AEFRowFieldsSheet(AEFSheet):
                     elif ((start_row > 0) and (cell.value.casefold() == str_last_field)):       # looking for the last field label
                         end_column	= cell.column
                         break
-            if ((end_column > 0) and (is_blank_row)):                                           # looking for the first fully blank row after the data
+            if ((end_column > 0) and (is_blank_row) and (start_row > 0)):                                           # looking for the first fully blank row after the data
                 end_row    = cell.row - 1
                 break
+        if (end_row == 0):
+            end_row = worksheet.max_row
         return (start_row, start_column, end_row, end_column)
 
 
@@ -280,9 +282,9 @@ class AEFSubmissionSheet(AEFColumnFieldsSheet):
                     ]
         self.primary_key    = {
                                 "party_id": "",
+                                "reported_year": 0,
                                 "major_version": 0,
-                                "minor_version": 0,
-                                "reported_year": 0
+                                "minor_version": 0
                             }
         super().__init__(worksheet, labels)
         return
@@ -331,8 +333,8 @@ class AEFSubmissionSheet(AEFColumnFieldsSheet):
         cursor.connection.commit()
         self.primary_key.update(  {
                                     "party_id": party_id,
+                                    "reported_year": reported_year,
                                     "major_version": major_version,
-                                    "minor_version": minor_version,
-                                    "reported_year": reported_year
+                                    "minor_version": minor_version
                                 }   )
         return

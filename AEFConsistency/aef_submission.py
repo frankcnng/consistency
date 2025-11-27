@@ -41,15 +41,6 @@ class AEFSubmission:
         return (self.party_id, self.reported_year, self.major_version, self.minor_version)
 
 
-    def load_to_db(self, cursor):
-        """Load the submission into the database using the provided cursor."""
-        cursor.execute("""
-            INSERT INTO Submissions (party_id, reported_year, major_version, minor_version, date_of_submission)
-            VALUES (?, ?, ?, ?, ?)
-        """, (self.party_id, self.reported_year, self.major_version, self.minor_version, self.date_of_submission))
-        return
-
-
     def load_authorizations(self, cursor):
         """Load all authorizations associated with this submission from the database."""
         cursor.execute("""
@@ -147,15 +138,6 @@ class AEFAuthorization:
         return
 
 
-    def load_to_db(self, cursor):
-        """Load the authorization into the database using the provided cursor."""
-        cursor.execute("""
-            INSERT INTO Authorizations (auth_id, date, version, reporting_party_Id, reported_year, major_version, minor_version)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (self.auth_id, self.date, self.version, self.reporting_party_id, self.reported_year, self.major_version, self.minor_version))
-        return
-
-
 class AEFAction:
     """Class representing an AEF action."""
 
@@ -195,15 +177,6 @@ class AEFAction:
         return
 
 
-    def load_to_db(self, cursor):
-        """Load the action into the database using the provided cursor."""
-        cursor.execute("""
-            INSERT INTO Actions (action_date, action_type, auth_id, date, version, reporting_party_Id, reported_year, major_version, minor_version)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (self.action_date, self.action_type, self.auth_id, self.date, self.version, self.reporting_party_id, self.reported_year, self.major_version, self.minor_version))
-        return
-
-
 class AEFHolding:
     """Class representing an AEF holding."""
 
@@ -232,15 +205,6 @@ class AEFHolding:
         return
 
 
-    def load_to_db(self, cursor):
-        """Load the holding into the database using the provided cursor."""
-        cursor.execute("""
-            INSERT INTO Holdings (holding_id, quantity, metric, reporting_party_Id, reported_year, major_version, minor_version)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (self.holding_id, self.quantity, self.metric, self.reporting_party_id, self.reported_year, self.major_version, self.minor_version))
-        return
-
-
 class AEFAuthorizedEntity:
     """Class representing an AEF authorized entity."""
 
@@ -260,14 +224,6 @@ class AEFAuthorizedEntity:
         self.submission                 = submission        
         return
 
-
-    def load_to_db(self, cursor):
-        """Load the authorized entity into the database using the provided cursor."""
-        cursor.execute("""
-            INSERT INTO Authorized_Entities (entity_id, name, reporting_party_Id, reported_year, major_version, minor_version)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (self.entity_id, self.name, self.reporting_party_id, self.reported_year, self.major_version, self.minor_version))
-        return
     
 class CooperativeApproach:
     pass
