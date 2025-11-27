@@ -30,24 +30,14 @@ class II02_ActionReportedOnce(AEFConsistencyCheck):
         cursor      = self.cursor
         table_name  = "Actions"
         for action in actions:
-#            cursor.execute(f'SELECT action_date FROM {table_name} WHERE action_date = ? AND action_type = ? AND action_subtype = ? AND first_id = ? AND last_id = ?', (action.action_date, action.action_type, action.action_subtype, action.first_id, action.last_id))
-            cursor.execute(f'SELECT action_date, action_subtype FROM {table_name} WHERE action_date = ? AND action_type = ? AND party_itmo_registry_id = ? AND first_id = ? AND last_id = ?', (action.action_date, action.action_type, action.party_itmo_registry_id, action.first_id, action.last_id))
+            if (action.action_subtype is None): # cannot use '==' operator, as NULL is not considered equal to anything
+                cursor.execute(f'SELECT action_date FROM {table_name} WHERE action_date = ? AND action_type = ? AND action_subtype IS NULL AND party_itmo_registry_id = ? AND first_id = ? AND last_id = ?', (action.action_date, action.action_type, action.party_itmo_registry_id, action.first_id, action.last_id))
+            else:
+                cursor.execute(f'SELECT action_date FROM {table_name} WHERE action_date = ? AND action_type = ? AND action_subtype = ? AND party_itmo_registry_id = ? AND first_id = ? AND last_id = ?', (action.action_date, action.action_type, action.action_subtype, action.party_itmo_registry_id, action.first_id, action.last_id))
             rows    = cursor.fetchall()
             if (len(rows) > 1):
-                is_matching_subtype = True
-                if (action.action_subtype is None): # need to explicitly match None (python) and NULL (db)
-                    for row in rows:
-                        if row[1] is not None:
-                            is_matching_subtype = False
-                            break
-                else:
-                    for row in rows:
-                        if (row[1] == action.action_subtype):
-                            is_matching_subtype = False
-                            break
-                if (is_matching_subtype):
-                    print ("\nII02 failed: Action reported more than once: '", action.action_type, "', dated:", action.action_date, ", on ITMO: '", action.first_id, "' - '", action.last_id, "'\n", sep='')
-                    return False
+                print ("\nII02 failed: Action reported more than once: '", action.action_type, "', dated:", action.action_date, ", on ITMO: '", action.first_id, "' - '", action.last_id, "'\n", sep='')
+                return False
         return True
 
 
