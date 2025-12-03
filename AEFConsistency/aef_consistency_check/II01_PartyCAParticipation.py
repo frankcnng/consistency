@@ -33,29 +33,6 @@ class II01_PartyCAParticipation(AEFConsistencyCheck):
         return True
 
 
-    def get_reported_cooperative_approach_ids(self):
-        """ Return a list of cooperative approach ids in this submission's actions and holdings.
-            Returns a list of unique cooperative approach ids.
-        """
-        submission  = self.submission
-        actions     = submission.actions
-        holdings    = submission.holdings
-        ca_ids      = []
-        for action in actions:
-            ca_id = action.cooperative_approach_id
-            if ca_id in ca_ids:
-                continue
-            else:
-                ca_ids.append(ca_id)
-        for holding in holdings:
-            ca_id = holding.cooperative_approach_id
-            if ca_id in ca_ids:
-                continue
-            else:
-                ca_ids.append(ca_id)
-        return list(set(ca_ids))
-
-
     def get_authorizing_party_ids(self, cooperative_approach_id):
         """ Return a list of party_ids that authorised the
             the cooperative approach with cooperative_approach_id.

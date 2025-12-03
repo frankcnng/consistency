@@ -6,6 +6,7 @@ The consistency checks are performed on this object, against itself,
 and data in the database.
 """
 
+import re
 import sqlite3
 
 import datetime
@@ -14,6 +15,7 @@ import datetime
 
 from aef_consistency_check.II01_PartyCAParticipation import II01_PartyCAParticipation
 from aef_consistency_check.II02_ActionReportedOnce import II02_ActionReportedOnce
+from aef_consistency_check.II03_SectorsActivityTypes import II03_SectorsActivityTypes
 
 
 class AEFSubmission:
@@ -27,8 +29,8 @@ class AEFSubmission:
         self.date_of_submission     = db_row[4]
         self.review_status          = db_row[5]
         self.consistency_status     = db_row[6]
-        self.ndc_period_start_year  = db_row[7]
-        self.ndc_period_end_year    = db_row[8]
+        self.ndc_period_first_year  = db_row[7]
+        self.ndc_period_last_year    = db_row[8]
         self.load_authorizations(cursor)
         self.load_actions(cursor)
         self.load_holdings(cursor)
@@ -102,7 +104,10 @@ class AEFSubmission:
         # Placeholder for consistency check logic
 
         check   = II01_PartyCAParticipation(self, cursor)
+        check.run()
         check   = II02_ActionReportedOnce(self, cursor)
+        check.run()
+        check   = II03_SectorsActivityTypes(self, cursor)
         check.run()
 
         return
@@ -227,3 +232,68 @@ class AEFAuthorizedEntity:
     
 class CooperativeApproach:
     pass
+
+
+class ITMOBlock:
+    """ Class representing a block of ITMOs
+    """
+    def __init__(self, str_first_id, str_last_id):
+        self.regexp         = r"(CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-)([1-9]\d{0,2}((\d*)|(,\d{3})*))(-\d{4})"
+        str0, str1, str2    = self.split_itmo_id(str_first_id)
+        first_nonsequence   = str0+str2
+        block_first         = int(str1.replace(",",""))
+        str0, str1, str2    = self.split_itmo_id(str_last_id)
+        last_nonsequence    = str0+str2
+        block_last          = int(str1.replace(",",""))
+        if (first_nonsequence == last_nonsequence):
+            if (block_first <= block_last):
+                self.start_nonsequence  = first_nonsequence
+                self.block_first        = block_first
+                self.last_nonsequence   = last_nonsequence
+                self.block_last         = block_last
+                return
+            else:   # Proposed block's start id is greater than end id
+                raise InvalidITMOBlockException("Start ITMO id: '", str_first_id, "' > end ITMO id: '", str_last_id, "'.")
+        else:   # Nonsequence number parts of the start and end ITMOs do not match
+            raise InvalidITMOBlockException("Start: '", str_first_id, "' and end '", str_last_id, "' ITMO ids do not match")
+
+
+    def is_overlapping(self, itmo_block):
+        """ Return true is this block overlaps with itmo_block.
+            Assume that both this object, and itmo_block are valid ITMO blocks
+        """
+        if (self.start_nonsequence == itmo_block.start_nonsequence):    #blocks may overlap, as they're from the same CA, Party, Registry, Vintage
+            x_first0, x_last0, x_first1, x_last1    = self.block_first, self.block_last, itmo_block.block_first, itmo_block.block_last
+            x_first_overlap                     = max(x_first0, x_first1)
+            x_last_overlap                       = min(x_last0, x_last1)
+            return (x_first_overlap <= x_last_overlap)
+        else:
+            return False
+
+
+    def split_itmo_id(self, str_itmo_id):
+        """ Return the three parts of itmo_id: before sequence number, sequence number, after sequence number.
+            itmo_id should always match the regular expression, as submission has been syntax checked.
+            The Exception should never be raised.
+        """
+        pattern = re.compile(self.regexp)
+        match   = pattern.match(str_itmo_id)
+        if (match):
+            str0    = match.group(1)
+            str1    = match.group(2)
+            str2    = match.group(match.lastindex)
+            return str0, str1, str2
+        else:
+            raise InvalidITMOBlockException("Invalid ITMO id: '", str_itmo_id, "'.")
+
+
+class InvalidITMOBlockException(Exception):
+    """ Attempt to create an ITMO block with invalid pairing of start_id and end_id.
+        Either the non-sequence number parts of the start_id and end_id do not match,
+        or the start_id is greater than the end_id.
+    """
+    def __init__(self, message):
+        super().__init__(message)
+
+    def __str__(self):
+        return f"InvalidITMOBlockException: {self.message}"
