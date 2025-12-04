@@ -16,6 +16,7 @@ import datetime
 from aef_consistency_check.II01_PartyCAParticipation import II01_PartyCAParticipation
 from aef_consistency_check.II02_ActionReportedOnce import II02_ActionReportedOnce
 from aef_consistency_check.II03_SectorsActivityTypes import II03_SectorsActivityTypes
+from aef_consistency_check.II04_Metrics import II04_Metrics
 
 
 class AEFSubmission:
@@ -109,7 +110,8 @@ class AEFSubmission:
         check.run()
         check   = II03_SectorsActivityTypes(self, cursor)
         check.run()
-
+        check   = II04_Metrics(self, cursor)
+        check.run()
         return
 
  

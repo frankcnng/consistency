@@ -18,7 +18,7 @@ class II03_SectorsActivityTypes(AEFConsistencyCheck):
 
 
     def run(self):
-        """ Perform the consistency check using the provided database cursor.
+        """ Perform the consistency check.
         """
         cursor              = self.cursor
         action_table_name   = "Actions"
@@ -99,75 +99,3 @@ class II03_SectorsActivityTypes(AEFConsistencyCheck):
         """Generate a report of the consistency check."""
         # Placeholder for actual reporting logic
         return
-    
-
-    def get_itmo_tuples(self):
-        """
-        """
-        submission  = self.submission
-        actions     = submission.actions
-        holdings    = submission.holdings
-        itmo_tuples = []
-        itmo_tuples.extend(self.get_itmo_tuples_from_list(actions))
-        itmo_tuples.extend(self.get_itmo_tuples_from_list(holdings))
-        return itmo_tuples
-        """
-        for action in actions:
-            try:
-                itmo_block  = ITMOBlock(action.first_id, action.last_id)
-            except InvalidITMOBlockException as e:
-                print(e)
-            else:
-                ca_id   = action.cooperative_approach_id
-                metric  = action.metric
-                itmo_blocks.append((itmo_block, ca_id, metric))
-        for holding in holdings:
-            try:
-                itmo_block  = ITMOBlock(holding.first_id, holding.last_id)
-            except InvalidITMOBlockException as e:
-                print(e)
-            else:
-                ca_id   = holding.cooperative_approach_id
-                metric  = holding.metric
-                itmo_blocks.append((itmo_block, ca_id, metric))
-        return itmo_blocks
-        """
-    
-
-    def get_itmo_tuples_from_list(self, list):
-        """
-        """
-        tuples  = []
-        for item in list:
-            try:
-                first_id, last_id   = item.first_id, item.last_id
-                itmo_block          = aef_submission.ITMOBlock(first_id, last_id)
-            except aef_submission.InvalidITMOBlockException as e:
-                print(e)
-            else:
-                ca_id   = item.cooperative_approach_id
-                metric  = item.metric
-                tuples.append((itmo_block, ca_id, metric, first_id, last_id))   
-        return tuples
-
-
-    def get_reported_cooperative_approach_ids(self):
-        """ Return a list of unique cooperative approach ids in this submission's actions and holdings.
-        """
-        submission  = self.submission
-        actions     = submission.actions
-        holdings    = submission.holdings
-        ca_ids      = []
-        for action in actions:
-            ca_id = action.cooperative_approach_id
-            if ca_id in ca_ids:
-                continue
-            else:
-                ca_ids.append(ca_id)
-        for holding in holdings:
-            ca_id = holding.cooperative_approach_id
-            if ca_id in ca_ids:
-                continue
-            else:
-                ca_ids.append(ca_id)
-        return list(set(ca_ids))
