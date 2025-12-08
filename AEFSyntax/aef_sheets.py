@@ -205,8 +205,8 @@ class AEFAuthorizations(RowFieldsSheet):
 											["Metric", "GHG|non\-GHG", "' must 'GHG' or 'non-GHG'"],
 											["Applicable GWP value(s)", "", ""],
 											["Applicable non-GHG metric", "", ""],
-											["Sector(s)", "[A-Za-z0-9,- ]+", "' must be a comma-separated list of words that contain alphanumeric, space, and hyphen characters."],
-											["Activity type(s)", "[A-Za-z0-9,\/ \+]+", "' must be a comma-separated list of words that contain alphanumeric, space, '/' and '+' characters."],
+											["Sector(s)", "[A-Za-z0-9\,\- ]+", "' must be a comma-separated list of words that contain alphanumeric, space, and hyphen characters."],
+											["Activity type(s)", "[A-Za-z0-9\,\/ \+]+", "' must be a comma-separated list of words that contain alphanumeric, space, '/' and '+' characters."],
 											["Purposes for authorization", "NDC|OIMP|IMP|OP|NDC and OIMP|NDC and IMP|NDC and OP", "' must be one of 'NDC', 'OIMP', 'IMP', 'OP', 'NDC and OIMP', 'NDC and IMP', or 'NDC and OP'."],
 											["Authorized Party(ies) ID", "blankable|NA|[A-Z]{3}( *, *[A-Z]{3})*", "' must a comma-separated list of ISO 3166 alpha-3 codes."],
 											["Authorized entity(ies) ID", "blankable|NA|[A-Za-z0-9 \-\.\(\)]+( *, *[A-Za-z0-9 \-\.\(\)]+)*", "' must be a comma-separated list of entity names."],
@@ -520,10 +520,37 @@ class AEFSubmission(ColumnFieldsSheet):
 		column		= fields_column + 1	# content is in the column after the field names
 		x_tuple		= 0
 		is_valid	= True
+		str_key		= ""
 		for x_row in range(fields_start_row, fields_end_row + 1):
 			if (self.check_cell_content(x_row, column, x_tuple, sheet_report)) is False:
 				is_valid	= False
 			x_tuple	+= 1
 		if (is_valid):
 			sheet_report.add_cell_report(self.template_sheet_name, worksheet.cell(1,1), "All field content valid.")
-		return is_valid
+			str_key	= worksheet.cell(4,3).value + '.' + str(worksheet.cell(6,3).value) + '.' + self.str_formatted_version(worksheet.cell(5,3).value)
+		return str_key, is_valid
+	
+
+	def str_formatted_version(self, version):
+		""" Returns a string with major version and minor version separated by a decimal point
+			This method is required due to the excel cell being possibly int, string, and float.
+		"""
+		version_type    = type(version)
+		if (version_type == int):
+			major_version   = version
+			minor_version   = 0
+		elif (version_type == float):
+			str_version = "{:.1f}".format(version)
+			str_major_version, str_minor_version	= map(int, str_version.split('.'))
+			major_version	= int(str_major_version)
+			minor_version	= int(str_minor_version)
+		else:
+			str_version = str(version)
+			if '.' in str_version:
+				str_major_version, str_minor_version	= str_version.split('.')
+				major_version	= int(str_major_version)
+				minor_version	= int(str_minor_version)
+			else:
+				major_version	= int(str_version)
+				minor_version	= 0
+		return str(major_version) + '.' + str(minor_version)
