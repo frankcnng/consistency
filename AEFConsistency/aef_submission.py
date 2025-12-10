@@ -8,6 +8,7 @@ and data in the database.
 
 import re
 import sqlite3
+from openpyxl import load_workbook
 
 import datetime
 
@@ -31,7 +32,8 @@ class AEFSubmission:
         self.review_status          = db_row[5]
         self.consistency_status     = db_row[6]
         self.ndc_period_first_year  = db_row[7]
-        self.ndc_period_last_year    = db_row[8]
+        self.ndc_period_last_year   = db_row[8]
+        self.str_path               = db_row[9]
         self.load_authorizations(cursor)
         self.load_actions(cursor)
         self.load_holdings(cursor)
@@ -100,18 +102,26 @@ class AEFSubmission:
         return
 
 
-    def check_consistency(self, cursor):
-        """Perform consistency checks on the submission."""
-        # Placeholder for consistency check logic
+    def check_consistency(self, cursor, report):
+        """ Perform consistency checks on the submission.
+        """
+        is_valid    = True
+        check   = II01_PartyCAParticipation(self, cursor, report)
+        if (check.run()) is False:
+            is_valid    = False
+        check   = II02_ActionReportedOnce(self, cursor, report)
+        if (check.run()) is False:
+            is_valid    = False
+        check   = II03_SectorsActivityTypes(self, cursor, report)
+        if (check.run()) is False:
+            is_valid    = False
+        check   = II04_Metrics(self, cursor, report)
+        if (check.run()) is False:
+            is_valid    = False
 
-        check   = II01_PartyCAParticipation(self, cursor)
-        check.run()
-        check   = II02_ActionReportedOnce(self, cursor)
-        check.run()
-        check   = II03_SectorsActivityTypes(self, cursor)
-        check.run()
-        check   = II04_Metrics(self, cursor)
-        check.run()
+        workbook    = load_workbook(self.str_path, data_only=True)
+        report.print(workbook, is_valid)
+        workbook.save(self.str_path)
         return
 
  
@@ -264,10 +274,10 @@ class ITMOBlock:
         """ Return true is this block overlaps with itmo_block.
             Assume that both this object, and itmo_block are valid ITMO blocks
         """
-        if (self.start_nonsequence == itmo_block.start_nonsequence):    #blocks may overlap, as they're from the same CA, Party, Registry, Vintage
+        if (self.start_nonsequence == itmo_block.start_nonsequence):    #blocks may overlap, if they're from the same CA, Party, Registry, Vintage
             x_first0, x_last0, x_first1, x_last1    = self.block_first, self.block_last, itmo_block.block_first, itmo_block.block_last
-            x_first_overlap                     = max(x_first0, x_first1)
-            x_last_overlap                       = min(x_last0, x_last1)
+            x_first_overlap                         = max(x_first0, x_first1)
+            x_last_overlap                          = min(x_last0, x_last1)
             return (x_first_overlap <= x_last_overlap)
         else:
             return False

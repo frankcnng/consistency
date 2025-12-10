@@ -12,6 +12,7 @@ import sqlite3
 
 import aef_sheet
 import aef_submission
+from aef_consistency_check.AEFConsistencyReport import *
 from create_db import create_tables
 
 
@@ -84,16 +85,16 @@ def	load_submissions(str_path, cursor):
 
 				print ("Loading '" + str_file + "' into database...")
 				workbook	= load_workbook(dst_path, data_only=True)
-				write_workbook_to_db(workbook, cursor)
+				write_workbook_to_db(workbook, cursor, dst_path)
 	return
 
 
-def	write_workbook_to_db(workbook, cursor):
+def	write_workbook_to_db(workbook, cursor, str_path):
 	"""	Write all data sheets of workbook into the database.
 		The workbook has been syntax checked, so fields can be loaded into objects without checking.
 	"""
 	submission_sheet	= aef_sheet.AEFSubmissionSheet(workbook)
-	submission_sheet.write_to_db(cursor)
+	submission_sheet.write_to_db(cursor, str_path)
 	submission_key		= submission_sheet.primary_key	# the submission primary key is used as the foreign key from other tables
 
 	authorizations_sheet	= aef_sheet.AEFAuthorizationsSheet(workbook)
@@ -108,17 +109,17 @@ def	write_workbook_to_db(workbook, cursor):
 
 
 def check_new_submissions(cursor):
-	""""Check new submissions in the database for consistency.
-	New submissions are those with consistency_status IS NULL.
+	"""	Check new submissions in the database for consistency.
+		New submissions are those with consistency_status IS NULL.
 	"""
+	report	= AEFConsistencyReport()
 	cursor.execute(f'SELECT * FROM Submissions WHERE consistency_status IS NULL')	# Load new submissions from db
 	submission_rows	= cursor.fetchall()
-	submissions	= []
 	for submission_row in submission_rows:
 		submission = aef_submission.AEFSubmission(cursor, submission_row)
-		submission.check_consistency(cursor)
+		submission.check_consistency(cursor, report)
+		report.reset()
 	return
-
 
 
 if __name__ == "__main__":

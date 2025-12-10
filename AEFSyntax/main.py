@@ -43,7 +43,7 @@ def main():
 				print ("\nChecking '" + str_file + "'")
 				str_submission_key, is_valid	= check_file(dst_path, str_file)
 				if (is_valid):
-					shutil.move(dst_path, passed_dir + str_submission_key + ".syntax_verified.xlsx")
+					shutil.move(dst_path, passed_dir + str_submission_key + ".syntax_passed.xlsx")
 				else:
 					shutil.move(dst_path, failed_dir + str_failed)
 				shutil.move(src_path, archive_dir + str_file)

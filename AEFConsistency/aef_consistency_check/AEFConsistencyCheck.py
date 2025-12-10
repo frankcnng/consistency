@@ -9,10 +9,11 @@ class AEFConsistencyCheck:
         These checks are describedin the Article 6.2 Reference Manual (version 3, 2025)
     """
 
-    def __init__(self, submission, cursor):
+    def __init__(self, submission, cursor, report):
         
         self.submission = submission
         self.cursor     = cursor
+        self.report     = report
         return
 
 
@@ -80,3 +81,13 @@ class AEFConsistencyCheck:
             else:
                 ca_ids.append(ca_id)
         return list(set(ca_ids))
+    
+
+    def normalise_str_names(self, str_names):
+        """ Given a comma separated list of names, return a alphbetically sorted, list of names ['n0', 'n1', 'n2']
+        """
+        if (not str_names):
+            return str([])
+        raw_names   = str_names.split(",")  # split on commas
+        list_names  = [raw_name.strip() for raw_name in raw_names if raw_name.strip()]  # strip whitespace and ignore empties
+        return (str(sorted(list_names)))

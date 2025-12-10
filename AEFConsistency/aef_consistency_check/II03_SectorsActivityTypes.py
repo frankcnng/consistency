@@ -5,6 +5,7 @@ import sqlite3
 import aef_submission
 
 from aef_consistency_check.AEFConsistencyCheck import *
+from aef_consistency_check.AEFConsistencyReport import AEFCheckReport
 
 
 class II03_SectorsActivityTypes(AEFConsistencyCheck):
@@ -12,8 +13,10 @@ class II03_SectorsActivityTypes(AEFConsistencyCheck):
         throughout their lifecycle and across all relevant reports, tables, and participating Parties.
     """
 
-    def __init__(self, submission, cursor):
-        super().__init__(submission, cursor)
+    def __init__(self, submission, cursor, submission_report):
+        self.check_report = AEFCheckReport("II03: Verify that sectors and activity types for each ITMO remain consistent.")
+        submission_report.add_check_report(self.check_report)
+        super().__init__(submission, cursor, submission_report)
         return
 
 
@@ -23,7 +26,7 @@ class II03_SectorsActivityTypes(AEFConsistencyCheck):
         cursor              = self.cursor
         action_table_name   = "Actions"
         holdings_table_name = "Holdings"
-        itmo_tuples = self.get_itmo_tuples()
+        itmo_tuples         = self.get_itmo_tuples()
 
         cursor.execute(f'SELECT cooperative_approach_id, first_id, last_id, metric FROM {action_table_name}')
         db_rows = cursor.fetchall()
@@ -31,71 +34,27 @@ class II03_SectorsActivityTypes(AEFConsistencyCheck):
         db_rows.extend(cursor.fetchall())
 
         authorizations_table_name   = "Authorizations"
-        db_ca_ids  = [] # list of all cooperative approach ids
+        is_valid                    = True
         for itmo_tuple in itmo_tuples:  # for each ITMO block in submission
             block, ca_id, metric   = itmo_tuple[0], itmo_tuple[1], itmo_tuple[2]
             
-            # This block gets the sectors and activity types for the cooperative approach in the submission's authorizations
-            authorizations  = self.submission.authorizations    # get the authorizations for the ca_id of this itmo block
-            sectors         = []
-            activity_types  = []
-            is_ca_in_auths  = False
-            for authorization in authorizations:
-                if (authorization.cooperative_approach_id == ca_id):
-                    is_ca_in_auths  = True
-                    auth_sectors  = authorization.sectors
-                    if (auth_sectors is not None):
-                        sectors.extend([str_sector.strip() for str_sector in auth_sectors.split(",")]) # get sectors of the cooperative approach
-                    auth_activity_types  = authorization.activity_types
-                    if (auth_activity_types is not None):
-                        activity_types.extend([str_activity_type.strip() for str_activity_type in auth_activity_types.split(",")]) # get activity_types of the cooperative approach
-            sectors         = set(sectors)
-            activity_types  = set(activity_types)
-            if (is_ca_in_auths is False):   # if cooperative approach has not authorisation in this submission, there are no associated sectors and activity types to check.
-                continue
+            cursor.execute(f'SELECT sectors, activity_types FROM {authorizations_table_name} WHERE cooperative_approach_id = ?', (ca_id, ))
+            db_auth_rows    = cursor.fetchall()
+            set_sectors, set_activity_types     = set(), set()
+            for db_auth_row in db_auth_rows:    # for each authorization in the db with cooperative approach id of ca_id
+                db_sectors, db_activity_types   = db_auth_row[0], db_auth_row[1]
+                str_sectors                     = self.normalise_str_names(db_sectors)
+                str_activity_types              = self.normalise_str_names(db_activity_types)
+                set_sectors.add(str_sectors)
+                set_activity_types.add(str_activity_types)
 
-            for db_row in db_rows:      # for each row from db's actions and holdings tables
-                db_ca_id, db_first_id, db_last_id, db_metric    = db_row[0], db_row[1], db_row[2], db_row[3]
-                try:
-                    itmo_block  = aef_submission.ITMOBlock(db_first_id, db_last_id)    # get the ITMO block from the db row
-                except aef_submission.InvalidITMOBlockException as e:
-                    print(e)
-                else:
-                    if (block.is_overlapping(itmo_block)):  # if the block from the db the overlapping (some ITMOs are the same) as the block from the submission
+            if (len(set_sectors) > 1):
+                str_error   = "ITMO with inconsistent sectors: '" + itmo_tuple[3] + "' - '" + itmo_tuple[4] + "' with cooperative approach id: '" + ca_id + "' : " + str(set_sectors)
+                self.check_report.add_error_report(str_error)
+                is_valid    = False
+            if (len(set_activity_types) > 1):
+                str_error   = "ITMO with inconsistent activity types: '" + itmo_tuple[3] + "' - '" + itmo_tuple[4] + "' with cooperative approach id: '" + ca_id + "' : " + str(set_activity_types)
+                self.check_report.add_error_report(str_error)
+                is_valid    = False
 
-                        # get the sectors and activity types associated with db_ca_id and compare them with the sectors and activity types of ca_id
-                        # verification will fail if the sectors and activity types do not match
-                        cursor.execute(f'SELECT sectors, activity_types FROM {authorizations_table_name} WHERE cooperative_approach_id = ?', (db_ca_id, ))
-                        db_auth_rows = cursor.fetchall()
-                        for db_auth_row in db_auth_rows:
-                            str_db_sectors, str_db_activity_types  = db_auth_row[0], db_auth_row[1]
-                            if (str_db_sectors is not None):
-                                db_sectors  = [str_sector.strip() for str_sector in str_db_sectors.split(",")]
-                            if (str_db_activity_types is not None):
-                                db_activity_types  = [str_activity_types.strip() for str_activity_types in str_db_activity_types.split(",")]                                    
-                        db_sectors          = set(db_sectors)
-                        db_activity_types   = set(db_activity_types)
-
-                        # all sectors and activity types for db_ca_id are in db_sectors and db_activity_types
-                        # all sectors and activity types for ca_id in submission are in sectors and activity_types
-                        inconsistent_sectors    = db_sectors ^ sectors
-                        inconsistent_activity_types = db_activity_types ^ activity_types
-                        if (len(inconsistent_sectors) > 0):
-                            print("\nII03 failed: ITMO with inconsistent sectors: '", itmo_tuple[3], "' - '", itmo_tuple[4], "'", sep='')
-                            print(sectors)
-                            print(db_sectors)
-                            return False
-                        if (len(inconsistent_activity_types) > 0):
-                            print("\nII03 failed: ITMO with inconsistent activity_types: '", itmo_tuple[3], "' - '", itmo_tuple[4], "'", sep='')
-                            print(activity_types)
-                            print(db_activity_types)
-                            return False
-                    else:
-                        continue
-        return True
-
-
-    def report(self):
-        """Generate a report of the consistency check."""
-        # Placeholder for actual reporting logic
-        return
+        return is_valid

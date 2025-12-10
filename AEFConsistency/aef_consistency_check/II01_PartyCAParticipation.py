@@ -5,6 +5,7 @@ import sqlite3
 import aef_submission
 
 from aef_consistency_check.AEFConsistencyCheck import *
+from aef_consistency_check.AEFConsistencyReport import AEFCheckReport
 
 
 class II01_PartyCAParticipation(AEFConsistencyCheck):
@@ -12,8 +13,10 @@ class II01_PartyCAParticipation(AEFConsistencyCheck):
         cooperative approaches in which the Party participates.
     """
 
-    def __init__(self, submission, cursor):
-        super().__init__(submission, cursor)
+    def __init__(self, submission, cursor, submission_report):
+        self.check_report = AEFCheckReport("II01: Party only reports actions and holdings derived from cooperative approaches in which the Party participates.")
+        submission_report.add_check_report(self.check_report)
+        super().__init__(submission, cursor, submission_report)
         return
 
 
@@ -23,14 +26,15 @@ class II01_PartyCAParticipation(AEFConsistencyCheck):
         submission          = self.submission
         submitting_party_id = submission.party_id
         ca_ids              = self.get_reported_cooperative_approach_ids()  # all cooperative approaches reported by submitting Party
+        is_valid            = True
         for ca_id in ca_ids:
             auth_party_ids  = self.get_authorizing_party_ids(ca_id)     # the Parties authorizing the cooperative approach
             part_party_ids  = self.get_participating_party_ids(ca_id)   # the Parties participating in the cooperative approach
             party_ids       = set(auth_party_ids + part_party_ids)
             if (submitting_party_id not in party_ids):
-                print ("\nII01 failed: '", submitting_party_id, "' reports on cooperative approach: '", ca_id, "' for which it does not participate.\n")
-                return False
-        return True
+                self.check_report.add_error_report("'" + submitting_party_id + "' reports on cooperative approach: '" + ca_id + "' for which it does not participate.")
+                is_valid    = False
+        return is_valid
 
 
     def get_authorizing_party_ids(self, cooperative_approach_id):
@@ -64,9 +68,3 @@ class II01_PartyCAParticipation(AEFConsistencyCheck):
                 column  = column.replace(" ", "")
                 party_ids.extend(column.split(","))
         return list(set(party_ids))
-
-
-    def report(self):
-        """Generate a report of the consistency check."""
-        # Placeholder for actual reporting logic
-        return

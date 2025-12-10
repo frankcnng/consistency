@@ -76,17 +76,20 @@ class AEFRowFieldsSheet(AEFSheet):
         fk_names    = ["reporting_party_Id", "reported_year", "major_version", "minor_version"]
         col_names.extend(fk_names)
 
-        str_placeholders = ", ".join("?" for _ in col_names)
-
+        str_placeholders    = ", ".join("?" for _ in col_names)
+        set_ITMO_id_labels  = {"First ID", "Last ID", "First unit ID", "Last unit ID"}
         for (x_row) in range(start_row, end_row + 1):
             x_label     = 0
             values      = []
             str_refs  = []
             for x_column in range(start_column, end_column + 1):
                 x_label += 1
-                if (labels[x_label][0] == ""):    # skip blank formatting columns
+                str_label   = labels[x_label][0]
+                if (str_label == ""):    # skip blank formatting columns
                     continue
-                cell_value = worksheet.cell(x_row, x_column).value
+                cell_value  = worksheet.cell(x_row, x_column).value
+                if ((str_label in set_ITMO_id_labels) and (cell_value is not None)):
+                    cell_value  = cell_value.replace(',', '')
                 values.append(cell_value)
 
             str_col_names = ", ".join(f'{c}' for c in col_names)
@@ -290,7 +293,7 @@ class AEFSubmissionSheet(AEFColumnFieldsSheet):
         return
 
 
-    def write_to_db(self, cursor):
+    def write_to_db(self, cursor, str_path):
         """Write the data from the worksheet to the database using the provided cursor.
         """
         table_name  = self.labels[0][1]  # e.g., "Submissions"
@@ -329,7 +332,7 @@ class AEFSubmissionSheet(AEFColumnFieldsSheet):
         if ((consistency_status == "{Information in this field is populated by the CARP}") or (consistency_status == "")) :
             consistency_status    = None
 
-        cursor.execute("INSERT INTO Submissions (party_id, major_version, minor_version, reported_year, date_of_submission, review_status, consistency_status, ndc_period_start_year, ndc_period_end_year) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (party_id, major_version, minor_version, reported_year, date_of_submission, review_status, consistency_status, ndc_period_start_year, ndc_period_end_year))
+        cursor.execute("INSERT INTO Submissions (party_id, major_version, minor_version, reported_year, date_of_submission, review_status, consistency_status, ndc_period_start_year, ndc_period_end_year, path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (party_id, major_version, minor_version, reported_year, date_of_submission, review_status, consistency_status, ndc_period_start_year, ndc_period_end_year, str_path))
         cursor.connection.commit()
         self.primary_key.update(  {
                                     "party_id": party_id,

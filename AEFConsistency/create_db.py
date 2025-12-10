@@ -23,6 +23,7 @@ def create_tables(db_path):
         consistency_status      TEXT,
         ndc_period_start_year   INTEGER,
         ndc_period_end_year     INTEGER,
+        path                    TEXT,
         PRIMARY KEY (party_Id, reported_year, major_version, minor_version)
     );
     """)
