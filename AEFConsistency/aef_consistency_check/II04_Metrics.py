@@ -48,8 +48,8 @@ class II04_Metrics(AEFConsistencyCheck):
                 else:
                     if (block.is_overlapping(itmo_block)):  # if the block from the db the overlapping (some ITMOs are the same) as the block from the submission
                         if (metric != db_metric):    # if the metric is not the same
-                            print("\nITMO with inconsistent metrics: '", itmo_tuple[3], "' - '", itmo_tuple[4], "' , metric: '", metric, "'", sep='')
-                            print ("\n\tSubmission: ", db_row[4], db_row[5], "version ", str(db_row[6]), ".", str(db_row[7]), ", metric: ", db_metric, sep='')
+                            self.check_report.add_error_report("ITMO with inconsistent metrics: '" + itmo_tuple[3] + "' - '" + itmo_tuple[4] + "' , metric: '" + metric + "'")
+                            self.check_report.add_error_report("\tSubmission: " + db_row[4] + " " + str(db_row[5]) + " version " + str(db_row[6]) + "." + str(db_row[7]) + ", metric: '" + db_metric + "'")
                             is_valid    = False
 
             authorizations_table_name   = "Authorizations"
@@ -59,13 +59,7 @@ class II04_Metrics(AEFConsistencyCheck):
             for db_auth_row in db_auth_rows:      # for each row from db's authorizations table with match cooperative approach id
                 db_metric, db_reporting_party_Id, db_reported_year, db_major_version, db_minor_version    = db_auth_row[0], db_auth_row[1], db_auth_row[2], db_auth_row[3], db_auth_row[4]
                 if (metric != db_metric):
-                    print("\nITMO with inconsistent metrics: '", itmo_tuple[3], "' - '", itmo_tuple[4], "' , metric: '", metric, "'", sep='')
-                    print ("\n\tSubmission: ", db_reporting_party_Id, db_reported_year, "version ", str(db_major_version), ".", str(db_minor_version), ": cooperative approach id: ", ca_id, ", metric: ", db_metric, sep='')
+                    self.check_report.add_error_report("ITMO with inconsistent metrics: '" + itmo_tuple[3] + "' - '" + itmo_tuple[4] + "' , metric: '" + metric + "'")
+                    self.check_report.add_error_report("\tSubmission: " + db_reporting_party_Id + " " + str(db_reported_year) + " version " + str(db_major_version) + "." + str(db_minor_version) + ": cooperative approach id: " + ca_id + ", metric: '" + db_metric + "'")
                     is_valid    = False
         return is_valid
-
-
-    def report(self):
-        """Generate a report of the consistency check."""
-        # Placeholder for actual reporting logic
-        return
