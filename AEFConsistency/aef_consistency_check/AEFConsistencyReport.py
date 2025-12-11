@@ -73,8 +73,12 @@ class AEFCheckReport:
             cell.font   = Font(italic=True)
             x_row       += 1
         else:
+            list_reported   = []
             for error_report in error_reports:
-                results_sheet.cell(x_row, 3, value=error_report)
+                if (error_report in list_reported):
+                    continue
+                results_sheet.cell(x_row, 4, value=error_report)
+                list_reported.append(error_report)
                 x_row   += 1
             cell	    = results_sheet.cell(x_row, 3, value="Check failed.")
             cell.font   = Font(italic=True)
