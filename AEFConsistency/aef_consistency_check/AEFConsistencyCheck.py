@@ -49,14 +49,14 @@ class AEFConsistencyCheck:
         tuples  = []
         for item in list:
             try:
-                first_id, last_id   = item.first_id, item.last_id
-                itmo_block          = aef_submission.ITMOBlock(first_id, last_id)
+                first_id, last_id, first_unit_id, last_unit_id   = item.first_id, item.last_id, item.first_unit_id, item.last_unit_id
+                itmo_block  = aef_submission.ITMOBlock(first_id, last_id)
             except aef_submission.InvalidITMOBlockException as e:
-                print(e)
+                self.check_report.add_error_report(str(e))
             else:
                 ca_id   = item.cooperative_approach_id
                 metric  = item.metric
-                tuples.append((itmo_block, ca_id, metric, first_id, last_id))   
+                tuples.append((itmo_block, ca_id, metric, first_id, last_id, first_unit_id, last_unit_id))   
         return tuples
     
 

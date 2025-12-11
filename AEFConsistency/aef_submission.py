@@ -18,6 +18,7 @@ from aef_consistency_check.II01_PartyCAParticipation import II01_PartyCAParticip
 from aef_consistency_check.II02_ActionReportedOnce import II02_ActionReportedOnce
 from aef_consistency_check.II03_SectorsActivityTypes import II03_SectorsActivityTypes
 from aef_consistency_check.II04_Metrics import II04_Metrics
+from aef_consistency_check.II05_UnderlyingUnitBlocks import II05_UnderlyingUnitBlocks
 
 
 class AEFSubmission:
@@ -116,6 +117,9 @@ class AEFSubmission:
         if (check.run()) is False:
             is_valid    = False
         check   = II04_Metrics(self, cursor, report)
+        if (check.run()) is False:
+            is_valid    = False
+        check   = II05_UnderlyingUnitBlocks(self, cursor, report)
         if (check.run()) is False:
             is_valid    = False
 
