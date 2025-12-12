@@ -19,6 +19,7 @@ from aef_consistency_check.II02_ActionReportedOnce import II02_ActionReportedOnc
 from aef_consistency_check.II03_SectorsActivityTypes import II03_SectorsActivityTypes
 from aef_consistency_check.II04_Metrics import II04_Metrics
 from aef_consistency_check.II05_UnderlyingUnitBlocks import II05_UnderlyingUnitBlocks
+from aef_consistency_check.II06_UsingPartiesEntities import II06_UsingPartiesEntities
 
 
 class AEFSubmission:
@@ -122,7 +123,9 @@ class AEFSubmission:
         check   = II05_UnderlyingUnitBlocks(self, cursor, report)
         if (check.run()) is False:
             is_valid    = False
-
+        check   = II06_UsingPartiesEntities(self, cursor, report)
+        if (check.run()) is False:
+            is_valid    = False
         workbook    = load_workbook(self.str_path, data_only=True)
         report.print(workbook, is_valid)
         workbook.save(self.str_path)

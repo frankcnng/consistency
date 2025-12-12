@@ -10,7 +10,13 @@ class AEFConsistencyCheck:
     """
 
     def __init__(self, submission, cursor, report):
-        
+
+        self.submissions_table_name     = "Submissions"
+        self.authorizations_table_name  = "Authorizations"
+        self.actions_table_name         = "Actions"
+        self.holdings_table_name        = "Holdings"
+        self.auth_entities_table_name   = "Authorized_Entities"
+
         self.submission = submission
         self.cursor     = cursor
         self.report     = report
