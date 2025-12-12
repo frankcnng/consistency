@@ -37,18 +37,18 @@ class AEFConsistencyCheck:
 
     def get_itmo_tuples(self):
         """ Return a list of ITMO tuples from this submission's actions and holdings,
-            consisting of the ITMOBlock, ca_id, metric, first_id, last_id from the action or holding.
+            consisting of the ITMOBlock, ca_id, metric, first_id, last_id, first_unit_id, last_unit_id from the action or holding.
         """
         submission  = self.submission
         actions     = submission.actions
         holdings    = submission.holdings
         itmo_tuples = []
-        itmo_tuples.extend(self.get_itmo_tuples_from_list(actions))
-        itmo_tuples.extend(self.get_itmo_tuples_from_list(holdings))
+        itmo_tuples.extend(self.get_itmo_tuples_from_list(actions, "actions"))
+        itmo_tuples.extend(self.get_itmo_tuples_from_list(holdings, "holdings"))
         return itmo_tuples
     
 
-    def get_itmo_tuples_from_list(self, list):
+    def get_itmo_tuples_from_list(self, list, str_actions_or_holdings):
         """ Return a list of ITMO tuples from this submission's list.
             List is either the submissions actions or holdings.
         """
@@ -62,7 +62,10 @@ class AEFConsistencyCheck:
             else:
                 ca_id   = item.cooperative_approach_id
                 metric  = item.metric
-                tuples.append((itmo_block, ca_id, metric, first_id, last_id, first_unit_id, last_unit_id))   
+                if (str_actions_or_holdings == "actions"):
+                    tuples.append((itmo_block, ca_id, metric, first_id, last_id, first_unit_id, last_unit_id, item.action_date))
+                else:
+                    tuples.append((itmo_block, ca_id, metric, first_id, last_id, first_unit_id, last_unit_id))
         return tuples
     
 

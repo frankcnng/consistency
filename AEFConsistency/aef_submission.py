@@ -20,6 +20,7 @@ from aef_consistency_check.II03_SectorsActivityTypes import II03_SectorsActivity
 from aef_consistency_check.II04_Metrics import II04_Metrics
 from aef_consistency_check.II05_UnderlyingUnitBlocks import II05_UnderlyingUnitBlocks
 from aef_consistency_check.II06_UsingPartiesEntities import II06_UsingPartiesEntities
+from aef_consistency_check.II07_CooperativeApproach import II07_CooperativeApproach
 
 
 class AEFSubmission:
@@ -126,6 +127,10 @@ class AEFSubmission:
         check   = II06_UsingPartiesEntities(self, cursor, report)
         if (check.run()) is False:
             is_valid    = False
+        check   = II07_CooperativeApproach(self, cursor, report)
+        if (check.run()) is False:
+            is_valid    = False
+
         workbook    = load_workbook(self.str_path, data_only=True)
         report.print(workbook, is_valid)
         workbook.save(self.str_path)
@@ -272,9 +277,9 @@ class ITMOBlock:
                 self.block_last         = block_last
                 return
             else:   # Proposed block's start id is greater than end id
-                raise InvalidITMOBlockException("Start ITMO id: '", str_first_id, "' > end ITMO id: '", str_last_id, "'.")
+                raise InvalidITMOBlockException("Start ITMO id: '" + str_first_id + "' > end ITMO id: '" + str_last_id + "'.")
         else:   # Nonsequence number parts of the start and end ITMOs do not match
-            raise InvalidITMOBlockException("Start: '", str_first_id, "' and end '", str_last_id, "' ITMO ids do not match")
+            raise InvalidITMOBlockException("Start: '" + str_first_id + "' and end '" + str_last_id + "' ITMO ids do not match")
 
 
     def is_overlapping(self, itmo_block):
@@ -303,7 +308,7 @@ class ITMOBlock:
             str2    = match.group(match.lastindex)
             return str0, str1, str2
         else:
-            raise InvalidITMOBlockException("Invalid ITMO id: '", str_itmo_id, "'.")
+            raise InvalidITMOBlockException("Invalid ITMO id: '" + str_itmo_id + "'.")
 
 
 class InvalidITMOBlockException(Exception):
@@ -312,6 +317,7 @@ class InvalidITMOBlockException(Exception):
         or the start_id is greater than the end_id.
     """
     def __init__(self, message):
+        self.message    = message
         super().__init__(message)
 
     def __str__(self):

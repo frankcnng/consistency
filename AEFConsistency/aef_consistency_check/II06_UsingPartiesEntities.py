@@ -13,14 +13,15 @@ class II06_UsingPartiesEntities(AEFConsistencyCheck):
     """
 
     def __init__(self, submission, cursor, submission_report):
-        self.check_report = AEFCheckReport("II05: Using Parties/entities align with their authorization.")
+        self.check_report = AEFCheckReport("II06: Using Parties/entities align with their authorization.")
         submission_report.add_check_report(self.check_report)
         super().__init__(submission, cursor, submission_report)
         return
 
+
     def run(self):
-        """Perform the consistency check using the provided database cursor."""
-        # Placeholder for actual consistency checking logic
+        """ Perform the consistency check.
+        """
         cursor      = self.cursor
         submission  = self.submission
         actions     = submission.actions
