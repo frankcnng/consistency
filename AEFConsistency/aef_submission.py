@@ -21,6 +21,10 @@ from aef_consistency_check.II04_Metrics import II04_Metrics
 from aef_consistency_check.II05_UnderlyingUnitBlocks import II05_UnderlyingUnitBlocks
 from aef_consistency_check.II06_UsingPartiesEntities import II06_UsingPartiesEntities
 from aef_consistency_check.II07_CooperativeApproach import II07_CooperativeApproach
+from aef_consistency_check.STC01_ActionsReportingPeriod import STC01_ActionsReportingPeriod
+from aef_consistency_check.STC02_AuthorizedUsage import STC02_AuthorizedUsage
+from aef_consistency_check.STC03_NDCImplementationPeriod import STC03_NDCImplementationPeriod
+from aef_consistency_check.STC04_FirstTransferDefinition import STC04_FirstTransferDefinition
 
 
 class AEFSubmission:
@@ -131,6 +135,19 @@ class AEFSubmission:
         if (check.run()) is False:
             is_valid    = False
 
+        check   = STC01_ActionsReportingPeriod(self, cursor, report)
+        if (check.run()) is False:
+            is_valid    = False
+        check   = STC02_AuthorizedUsage(self, cursor, report)
+        if (check.run()) is False:
+            is_valid    = False
+        check   = STC03_NDCImplementationPeriod(self, cursor, report)
+        if (check.run()) is False:
+            is_valid    = False
+        check   = STC04_FirstTransferDefinition(self, cursor, report)
+        if (check.run()) is False:
+            is_valid    = False
+
         workbook    = load_workbook(self.str_path, data_only=True)
         report.print(workbook, is_valid)
         workbook.save(self.str_path)
@@ -192,7 +209,7 @@ class AEFAction:
         self.vintage                        = db_row[18]
         self.first_transferring_party_id    = db_row[19]
         self.acquiring_party_id             = db_row[20]
-        self.oimp_purpose                   = db_row[21]
+        self.purpose                        = db_row[21]
         self.use_cancelling_party_id        = db_row[22]
         self.use_cancelling_entity_id       = db_row[23]
         self.year_used_for_ndc              = db_row[24]

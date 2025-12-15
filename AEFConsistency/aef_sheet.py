@@ -167,7 +167,7 @@ class AEFActionsSheet(AEFRowFieldsSheet):
                             ["Transferring participating Party ID", "transferring_party_id"],
                             ["Acquiring participating Party ID",  "acquiring_party_id"],
                             ["", ""],
-                            ["Purpose for which the ITMO has been used towards or cancelled for OIMP", "oimp_purpose"],
+                            ["Purpose for which the ITMO has been used towards or cancelled for OIMP", "purpose"],
                             ["Using/cancelling participating Party ID", "use_cancelling_party_id"],
                             ["Using/cancelling authorized entity ID", "use_cancelling_entity_id"],
                             ["Calendar year for which the ITMOs are used towards the Party's NDC", "year_used_for_ndc"],

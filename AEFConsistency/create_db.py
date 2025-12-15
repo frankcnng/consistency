@@ -79,7 +79,7 @@ def create_tables(db_path):
         vintage                     INTEGER,
         transferring_party_id       TEXT,
         acquiring_party_id          TEXT,
-        oimp_purpose                TEXT,
+        purpose                     TEXT,
         use_cancelling_party_id     TEXT,
         use_cancelling_entity_id    TEXT,
         year_used_for_ndc           INTEGER,
