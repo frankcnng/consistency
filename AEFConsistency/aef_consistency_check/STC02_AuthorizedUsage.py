@@ -35,8 +35,8 @@ class STC02_AuthorizedUsage(AEFConsistencyCheck):
                 purpose = action.purpose
                 cursor.execute(f'SELECT cooperative_approach_id  FROM {self.authorizations_table_name} WHERE authorization_id = ? AND purposes_for_auth = ?', (auth_id, purpose))
                 db_rows = cursor.fetchall()
-                if (len(db_rows) == 0):
-                    cursor.execute(f'SELECT purposes_for_auth  FROM {self.authorizations_table_name} WHERE authorization_id = ?', (auth_id, ))
+                if (len(db_rows) == 0): # if no matching purpose in authorization with the same authorization id with the purpose in the action
+                    cursor.execute(f'SELECT purposes_for_auth  FROM {self.authorizations_table_name} WHERE authorization_id = ?', (auth_id, ))  # get the purposes from the authorization
                     db_row      = cursor.fetchone()
                     db_purpose  = db_row[0] if (db_row is not None) else "N/A"
                     self.check_report.add_error_report("Authorization id: '" + auth_id + "' with purpose: '" + db_purpose + "' not consistent with action on " + str(action.action_date)+ "' with purpose: '" + purpose)

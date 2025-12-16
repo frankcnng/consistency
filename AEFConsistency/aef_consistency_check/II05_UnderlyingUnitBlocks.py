@@ -39,17 +39,17 @@ class II05_UnderlyingUnitBlocks(AEFConsistencyCheck):
         for itmo_tuple in itmo_tuples:  # for each ITMO block in submission
             itmo_block, first_id, last_id, first_unit_id, last_unit_id   = itmo_tuple[0], itmo_tuple[3], itmo_tuple[4], itmo_tuple[5], itmo_tuple[6]
 
-            if ((first_unit_id is None) != (last_unit_id is None)): # if underlying units declared without matching start or end ids.
+            if (((first_unit_id is None) != (last_unit_id is None)) or ((first_unit_id == "NA") != (last_unit_id == "NA"))): # if underlying units declared without matching NULL start or end ids.
                 self.check_report.add_error_report("ITMO with inconsistent underlying units: '" + first_id + "' - '" + last_id + "' underlying units with invalid start-end id pair.")
                 self.check_report.add_error_report("/tUnderlying units: '" + (first_unit_id or "") + "' - '" + (last_unit_id or ""))
                 is_valid    = False
                 continue
-            if (first_unit_id is not None): #if underlying units is not null
+            if ((first_unit_id is not None) and (first_unit_id != "NA")): #if underlying units is not null
                 try:
                     blocks   = self.underlying_block(first_unit_id, last_unit_id)
                     underlying_first, underlying_last, underlying_pre, underlying_post   = blocks[0][0], blocks[0][1], blocks[0][2], blocks[0][3]
                 except Exception as e:
-                    self.check_report.add_error_report("ITMO with invalid underlying units: '" + first_id + "' - '" + last_id + "', underlying units: '" + first_unit_id + "' - '" + last_unit_id)
+                    self.check_report.add_error_report("ITMO with invalid underlying units: '" + first_id + "' - '" + last_id + "', underlying units: '" + first_unit_id + "' - '" + last_unit_id + "'")
                     self.check_report.add_error_report("\tApart from the sequence number, first unit id and last unit id must be exactly the same.")
                     is_valid    = False
                     continue
@@ -59,6 +59,10 @@ class II05_UnderlyingUnitBlocks(AEFConsistencyCheck):
             # This block of code compares the metrics for each overlapping itmo block in all submissions
             for db_row in db_rows:      # for each row from db's actions and holdings tables
                 db_first_id, db_last_id, db_first_unit_id, db_last_unit_id    = db_row[0], db_row[1], db_row[2], db_row[3]
+                if ((first_unit_id is None) and (last_unit_id is None) and (db_first_unit_id is None) and (db_last_unit_id is None)):
+                    continue
+                if ((first_unit_id == "NA") and (last_unit_id == "NA") and (db_first_unit_id == "NA") and (db_last_unit_id == "NA")):
+                    continue
                 try:
                     db_itmo_block   = aef_submission.ITMOBlock(db_first_id, db_last_id)    # get the ITMO block from the db row
                 except aef_submission.InvalidITMOBlockException as e:
