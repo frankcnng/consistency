@@ -109,7 +109,7 @@ class AEFSubmission:
         return
 
 
-    def check_consistency(self, cursor, report):
+    def is_consistent(self, cursor, report):
         """ Perform consistency checks on the submission.
         """
         is_valid    = True
@@ -151,7 +151,7 @@ class AEFSubmission:
         workbook    = load_workbook(self.str_path, data_only=True)
         report.print(workbook, is_valid)
         workbook.save(self.str_path)
-        return
+        return is_valid
 
  
 class AEFAuthorization:

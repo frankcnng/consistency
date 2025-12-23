@@ -5,6 +5,7 @@
 
 # Load os and shell libraries
 import os, shutil
+import time
 
 # Load the openpyxl Excel library
 from openpyxl import load_workbook
@@ -25,7 +26,7 @@ failed_dir		= aef_dir + "11.syntax.failed/"
 
 def main():
 	"""	Check all .xlsx files in unprocessed_dir for valid AEF syntax.
-		Files ending with '.syntax_verified.xlsx' or '.syntax_failed' are the output of this tool, and will be overwritten.
+		Files ending with '.syntax_passed.xlsx' or '.syntax_failed.xlsx' are the output of this tool, and will be overwritten.
 	"""
 	files	= os.listdir(unprocessed_dir)
 	for str_file in files:
@@ -39,14 +40,30 @@ def main():
 				dst_path	= unprocessed_dir + str_checked
 				src_path	= unprocessed_dir + str_file
 				shutil.copyfile(src_path, dst_path)
-
-				print ("\nChecking '" + str_file + "'")
 				str_submission_key, is_valid	= check_file(dst_path, str_file)
 				if (is_valid):
-					shutil.move(dst_path, passed_dir + str_submission_key + ".syntax_passed.xlsx")
+					src_path	= dst_path
+					dst_path	= passed_dir + str_submission_key + ".syntax_passed.xlsx"
+					if (os.path.exists(dst_path)):
+						dst_path	= failed_dir + str_failed
+						shutil.move(src_path, dst_path)							# move source to destination
+						str_error	= "Duplicate submission.  Submission with the same Party ID (" + str_submission_key[0:3] + "), Reported Year (" + str_submission_key[4:8] + "), Version (" + str_submission_key[9:10] + "." + str_submission_key[11:12] + ") already submitted."
+						update_submission_status(dst_path, str_error)
+					else:
+						shutil.move(src_path, dst_path + ".syntax_passed.xlsx")
 				else:
 					shutil.move(dst_path, failed_dir + str_failed)
-				shutil.move(src_path, archive_dir + str_file)
+				shutil.move(unprocessed_dir + str_file, archive_dir + str_file)
+
+
+def update_submission_status(path, str_error):
+	"""	Update the worksheet status for the submission file at 'path',
+		move the file to directory 'str_dir', and set the error message to 'str_error'.
+	"""
+	workbook	= load_workbook(path, data_only=True)
+	worksheet	= workbook["Table 1 Submission"]
+	worksheet.cell(9, 3, value=str_error + ". " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + " GMT")
+	workbook.save(path)
 
 
 def check_file(str_path, str_file):

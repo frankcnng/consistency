@@ -12,8 +12,8 @@ class AEFConsistencyReport:
 
     def __init__(self):
         self.check_reports  = []
-        self.str_success    = "Consistency checks completed successfully."
-        self.str_fail       = "Consistency checks found errors."
+        self.str_success    = "Consistency checks passed"
+        self.str_fail       = "Consistency checks failed"
 
 
     def add_check_report(self, check_report):
@@ -44,11 +44,11 @@ class AEFConsistencyReport:
         cell.font   = Font(bold=True)
 
         if (is_valid):
-            str_consistency = "Consistency checks passed: "
+            str_consistency = self.str_success
         else:
-            str_consistency = "Consistency checks failed: "
+            str_consistency = self.str_fail
         worksheet   = workbook["Table 1 Submission"]
-        worksheet.cell(9, 3, value=str_consistency + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + " GMT")
+        worksheet.cell(9, 3, value=str_consistency + ": " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + " GMT")
 
 
 class AEFCheckReport:
