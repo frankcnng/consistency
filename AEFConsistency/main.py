@@ -80,8 +80,8 @@ def	load_workbook_to_db(workbook, cursor, str_filepath):
 
 
 def replace_obsolete_submissions(cursor):
-    """	Check new submissions in the database for consistency.
-        New submissions are those with consistency_status IS NULL.
+    """	Delete all obsolete submissions from the database, update the status, and move submission file to "<obsolete_dir>".
+        Note that new submissions, with a older reported date is still considered an obsolete submission.
     """
     cursor.execute(f'SELECT party_id, reported_year, major_version, minor_version, path FROM Submissions WHERE consistency_status IS NULL')	# Get new submissions from db
     submission_rows	= cursor.fetchall()

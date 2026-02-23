@@ -61,7 +61,7 @@ class AEFSheet:
 				str_message	= "Cell content error: The value provided for '" + field_name + field_error_mesg
 				sheet_report.add_cell_report(self.template_sheet_name, cell, str_message)
 				return False
-		elif ((field_reg_exp == '\d+\.\d+') and (cell.data_type == 'n')):
+		elif ((field_reg_exp == r'\d+\.\d+') and (cell.data_type == 'n')):
 			if (re.match(field_reg_exp, str(cell.number_format)) == None):
 				str_message	= "Cell content error: The value provided for '" + field_name + field_error_mesg
 				sheet_report.add_cell_report(self.template_sheet_name, cell, str_message)
@@ -196,22 +196,22 @@ class AEFAuthorizations(RowFieldsSheet):
 		self.template_sheet_name	= "Table 2 Authorizations"
 
 		self.field_reg_exp_tuples	=	[
-											["Authorization ID", "[A-Za-z0-9 \-\/\.]+", "' can only contain alphanumeric, decimal point, space, hyphen, and slash characters."],
+											["Authorization ID", r"[A-Za-z0-9 \-\/\.]+", "' can only contain alphanumeric, decimal point, space, hyphen, and slash characters."],
 											["Date of authorization", "dd/mm/yyyy", "' must be of the format 'dd/mm/yyyy'."],
-											["Cooperative approach ID", "CA\d{4}", "' must start with 'CA' followed by four digits."],
-											["Version of the authorization", "\d+", "' must be a number."],
+											["Cooperative approach ID", r"CA\d{4}", "' must start with 'CA' followed by four digits."],
+											["Version of the authorization", r"\d+", "' must be a number."],
 											["", "", ""],
-											["Authorized quantity", "\d+", "' must be a number."],
-											["Metric", "GHG|non\-GHG", "' must 'GHG' or 'non-GHG'"],
+											["Authorized quantity", r"\d+", "' must be a number."],
+											["Metric", r"GHG|non\-GHG", "' must 'GHG' or 'non-GHG'"],
 											["Applicable GWP value(s)", "", ""],
 											["Applicable non-GHG metric", "", ""],
-											["Sector(s)", "[A-Za-z0-9\,\- ]+", "' must be a comma-separated list of words that contain alphanumeric, space, and hyphen characters."],
-											["Activity type(s)", "[A-Za-z0-9\,\/ \+]+", "' must be a comma-separated list of words that contain alphanumeric, space, '/' and '+' characters."],
+											["Sector(s)", r"[A-Za-z0-9\,\- ]+", "' must be a comma-separated list of words that contain alphanumeric, space, and hyphen characters."],
+											["Activity type(s)", r"[A-Za-z0-9\,\/ \+]+", "' must be a comma-separated list of words that contain alphanumeric, space, '/' and '+' characters."],
 											["Purposes for authorization", "NDC|OIMP|IMP|OP|NDC and OIMP|NDC and IMP|NDC and OP", "' must be one of 'NDC', 'OIMP', 'IMP', 'OP', 'NDC and OIMP', 'NDC and IMP', or 'NDC and OP'."],
 											["Authorized Party(ies) ID", "blankable|NA|[A-Z]{3}( *, *[A-Z]{3})*", "' must a comma-separated list of ISO 3166 alpha-3 codes."],
-											["Authorized entity(ies) ID", "blankable|NA|[A-Za-z0-9 \-\.\(\)]+( *, *[A-Za-z0-9 \-\.\(\)]+)*", "' must be a comma-separated list of entity names."],
+											["Authorized entity(ies) ID", r"blankable|NA|[A-Za-z0-9 \-\.\(\)]+( *, *[A-Za-z0-9 \-\.\(\)]+)*", "' must be a comma-separated list of entity names."],
 											["OIMP authorized by the Party", "", ""],
-											["Authorized timeframe", "blankable|NA|^ *(?:Occurred|Use): from\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4}))\s+to\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4}))(?:(?:\.\s*Use:\s+from\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4}))\s+to\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4})))?) *$",\
+											["Authorized timeframe", r"blankable|NA|^ *(?:Occurred|Use): from\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4}))\s+to\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4}))(?:(?:\.\s*Use:\s+from\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4}))\s+to\s+(?:(?:\d{4})|(?:\d{2}\/\d{4})|((?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/\d{4})))?) *$",\
 												"' must be empty or 'Occurred: from <date> to <date>', 'Use: from <date> to <date>', or 'Occurred: from <date> to <date>. Use: from <date> to <date>'\n where <date> is 'yyyy', 'mm/yyyy', or 'dd/mm/yyyy'."],
 											["Authorization terms and conditions", "", ""],
 											["Authorization documentation", "", ""],
@@ -232,33 +232,33 @@ class AEFActions(RowFieldsSheet):
 											["Action date", "dd/mm/yyyy", "' must be of the format 'dd/mm/yyyy'."],
 											["Action type", "Acquisition|Transfer|Use|Cancellation|First transfer", "' must be one of 'Acquisition', 'Transfer', 'Use', 'Cancellation', 'First transfer'"],
 											["Action subtype", "", ""],
-											["Cooperative approach ID", "CA\d{4}", "' must start with 'CA' followed by four digits."],
-											["Authorization ID", "[A-Za-z0-9 \-\/\.]+", "' can only contain alphanumeric, decimal point, space, hyphen, and slash characters."],
-											["First transferring participating Party ID", "[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],
-											["Party ITMO registry ID", "[A-Z]{3}\d{2}", "' must be a Party ID followed by two digits"],
-											["First ID", "CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-[1-9]\d{0,2}((\d*)|(,\d{3})*)-\d{4}", "' must be an ITMO unique identifier as per 6/CMA.4 annex I para.5."],
-											["Last ID", "CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-[1-9]\d{0,2}((\d*)|(,\d{3})*)-\d{4}", "' must be an ITMO unique identifier as per 6/CMA.4 annex I para.5."],
+											["Cooperative approach ID", r"CA\d{4}", "' must start with 'CA' followed by four digits."],
+											["Authorization ID", r"[A-Za-z0-9 \-\/\.]+", "' can only contain alphanumeric, decimal point, space, hyphen, and slash characters."],
+											["First transferring participating Party ID", r"[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],
+											["Party ITMO registry ID", r"[A-Z]{3}\d{2}", "' must be a Party ID followed by two digits"],
+											["First ID", r"CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-[1-9]\d{0,2}((\d*)|(,\d{3})*)-\d{4}", "' must be an ITMO unique identifier as per 6/CMA.4 annex I para.5."],
+											["Last ID", r"CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-[1-9]\d{0,2}((\d*)|(,\d{3})*)-\d{4}", "' must be an ITMO unique identifier as per 6/CMA.4 annex I para.5."],
 											["", "", ""],
 											["Underlying unit registry ID", "", ""],
 											["First unit ID", "", ""],
 											["Last unit ID", "", ""],
 											["", "", ""],
-											["Metric", "GHG|non\-GHG", "' must 'GHG' or 'non-GHG'"],
+											["Metric", r"GHG|non\-GHG", "' must 'GHG' or 'non-GHG'"],
 											["Applicable GWP value(s)", "", ""],
 											["Applicable non-GHG metric", "", ""],
-											["Quantity (t CO2 eq)", "blankable|NA|\d+", "' must be a numerical value."],
-											["Quantity (in non-GHG metric)", "blankable|NA|\d*", "' must be a numerical value."],
+											["Quantity (t CO2 eq)", r"blankable|NA|\d+", "' must be a numerical value."],
+											["Quantity (in non-GHG metric)", r"blankable|NA|\d*", "' must be a numerical value."],
 											["", "", ""],
 											["Mitigation type", "", ""],
-											["Vintage", "blankable|NA|\d{4}", "' must be a year."],
+											["Vintage", r"blankable|NA|\d{4}", "' must be a year."],
 											["", "", ""],
-											["Transferring participating Party ID", "blankable|NA|[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],
-											["Acquiring participating Party ID",  "blankable|NA|[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],
+											["Transferring participating Party ID", r"blankable|NA|[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],
+											["Acquiring participating Party ID",  r"blankable|NA|[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],
 											["", "", ""],
 											["Purpose for which the ITMO has been used towards or cancelled for OIMP", "", ""],
-											["Using/cancelling participating Party ID", "blankable|NA|[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],
+											["Using/cancelling participating Party ID", r"blankable|NA|[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],
 											["Using/cancelling authorized entity ID", "", ""],
-											["Calendar year for which the ITMOs are used towards the Party's NDC", "blankable|NA|\d{4}", "' must be a year."],
+											["Calendar year for which the ITMOs are used towards the Party's NDC", r"blankable|NA|\d{4}", "' must be a year."],
 											["", "", ""],
 											["Result of the consistency checks", "", ""],
 											["Additional explanatory information", "", ""]
@@ -274,25 +274,25 @@ class AEFHoldings(RowFieldsSheet):
 		self.template_sheet_name	= "Table 4 Holdings"
 
 		self.field_reg_exp_tuples	=	[
-											["Cooperative approach ID", "CA\d{4}", "' must start with 'CA' followed by four digits."],
-											["Authorization ID", "[A-Za-z0-9 \-]+", "' can only contain alphanumeric, space, and hyphen characters."],
-											["First transferring participating Party ID", "[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],
-											["Party ITMO registry ID", "[A-Z]{3}\d{2}", "' must be a Party ID followed by two digits"],
-											["First ID", "CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-[1-9]\d{0,2}((\d*)|(,\d{3})*)-\d{4}", "' must be an ITMO unique identifier as per 6/CMA.4 annex I para.5."],
-											["Last ID", "CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-[1-9]\d{0,2}((\d*)|(,\d{3})*)-\d{4}", "' must be an ITMO unique identifier as per 6/CMA.4 annex I para.5."],
+											["Cooperative approach ID", r"CA\d{4}", "' must start with 'CA' followed by four digits."],
+											["Authorization ID", r"[A-Za-z0-9 \-]+", "' can only contain alphanumeric, space, and hyphen characters."],
+											["First transferring participating Party ID", r"[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],
+											["Party ITMO registry ID", r"[A-Z]{3}\d{2}", "' must be a Party ID followed by two digits"],
+											["First ID", r"CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-[1-9]\d{0,2}((\d*)|(,\d{3})*)-\d{4}", "' must be an ITMO unique identifier as per 6/CMA.4 annex I para.5."],
+											["Last ID", r"CA\d{4}-[A-Z]{3}\d{2}-[A-Z]{3}-[1-9]\d{0,2}((\d*)|(,\d{3})*)-\d{4}", "' must be an ITMO unique identifier as per 6/CMA.4 annex I para.5."],
 											["", "", ""],
 											["Underlying unit registry ID", "", ""],
 											["First unit ID", "", ""],
 											["Last unit ID", "", ""],
 											["", "", ""],
-											["Metric", "GHG|non\-GHG", "' must 'GHG' or 'non-GHG'"],
+											["Metric", r"GHG|non\-GHG", "' must 'GHG' or 'non-GHG'"],
 											["Applicable GWP value(s)", "", ""],
 											["Applicable non-GHG metric", "", ""],
-											["Quantity (t CO2 eq)", "blankable|NA|\d+", "' must be a numerical value."],
-											["Quantity (in non-GHG metric)", "blankable|NA|\d+", "' must be a numerical value."],
+											["Quantity (t CO2 eq)", r"blankable|NA|\d+", "' must be a numerical value."],
+											["Quantity (in non-GHG metric)", r"blankable|NA|\d+", "' must be a numerical value."],
 											["", "", ""],
 											["Mitigation type", "", ""],
-											["Vintage", "\d{4}", "' must be a year."]
+											["Vintage", r"\d{4}", "' must be a year."]
 										]
 
 		super().__init__(worksheet, field_names)
@@ -305,11 +305,11 @@ class AEFAuthEntities(RowFieldsSheet):
 		self.template_sheet_name	= "Table 5 Auth. entities"
 
 		self.field_reg_exp_tuples	=	[
-											["Date of the authorization", "blankable|dd/mm/yyyy", "' must be of the format 'dd/mm/yyyy'"],
+											["Date of the authorization", r"blankable|dd/mm/yyyy", "' must be of the format 'dd/mm/yyyy'"],
 											["Name", "", ""],
-											["Country of incorporation", "blankable|[A-Z][A-Za-z \(\)\']+", "' is not a recognised Party Name."],	# Capitalised alphabet string contains spaces, brackets, apostrophes],
+											["Country of incorporation", r"blankable|[A-Z][A-Za-z \(\)\']+", "' is not a recognised Party Name."],	# Capitalised alphabet string contains spaces, brackets, apostrophes],
 											["Identification number", "", ""],
-											["Cooperative approach ID", "blankable|CA\d{4}", "' must start with 'CA' followed by four digits."],
+											["Cooperative approach ID", r"blankable|CA\d{4}", "' must start with 'CA' followed by four digits."],
 											["Conditions", ""],
 											["Change and revocation conditions", "", ""],
 											["Additional explanatory information", "", ""]
@@ -484,15 +484,15 @@ class AEFSubmission(ColumnFieldsSheet):
 	def __init__(self, worksheet, field_names):
 		self.template_sheet_name	= "Table 1 Submission"
 		self.field_reg_exp_tuples	=	[
-											["Party", "[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],	# ISO 3166 alpha-3 country code
-											["Version", "\d+\.\d+", "' must conform to X.Y."],
-											["Reported year", "\d{4}", "'' must be a four digit year."],
-											["Date of submission", "dd/mm/yyyy", "' must be of the format 'dd/mm/yyyy'."],
-											["Review status of the initial report", "\{Information in this field is populated by the CARP\}", "' must not be changed.  It is for secretariat use."],
-											["Result of the consistency check of this AEF submission", "\{Information in this field is populated by the CARP\}", "'' must not be changed.  It is for secretariat use."],
-											["First year of the NDC implementation period", "\d{4}", "' must be a four digit year."],
-											["Last year of the NDC implementation period", "\d{4}", "' must be a four digit year."],
-											["Reference to the Article 6 technical expert review report of the initial report", "\{Link to be produced by the CARP\}", "' must not be changed.  It is for secretariat use."]
+											["Party", r"[A-Z]{3}", "' must an ISO 3166 alpha-3 country code."],	# ISO 3166 alpha-3 country code
+											["Version", r"\d+\.\d+", "' must conform to X.Y."],
+											["Reported year", r"\d{4}", "'' must be a four digit year."],
+											["Date of submission", r"dd/mm/yyyy", "' must be of the format 'dd/mm/yyyy'."],
+											["Review status of the initial report", r"\{Information in this field is populated by the CARP\}", "' must not be changed.  It is for secretariat use."],
+											["Result of the consistency check of this AEF submission", r"\{Information in this field is populated by the CARP\}", "'' must not be changed.  It is for secretariat use."],
+											["First year of the NDC implementation period", r"\d{4}", "' must be a four digit year."],
+											["Last year of the NDC implementation period", r"\d{4}", "' must be a four digit year."],
+											["Reference to the Article 6 technical expert review report of the initial report", r"\{Link to be produced by the CARP\}", "' must not be changed.  It is for secretariat use."]
 										]
 		super().__init__(worksheet, field_names)
 
